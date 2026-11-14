@@ -1,0 +1,1842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ratios</title>
+<style>
+:root{
+  --ink:#1D2939; --muted:#667085; --line:#D0D5DD;
+  --red:#E5484D; --blue:#2F6FDE; --yellow:#F2B400; --green:#22A06B; --pink:#C2479B;
+  --good:#1F8A5B; --bad:#C2372F; --hl:#FFF0B3;
+  --c1:#0F7B6C; --c2:#B4541A; --purple:#6A3D9A;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:Verdana,Geneva,Tahoma,sans-serif;color:var(--ink);background:#fff}
+.app{height:100vh;height:100dvh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;gap:18px;padding:16px 28px 24px}
+
+.bar{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px}
+.tabs button{font:bold 20px Verdana,Geneva,sans-serif;min-width:66px;height:54px;padding:0 12px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.toggle{display:flex;align-items:center;gap:12px;font-size:22px;cursor:pointer;user-select:none}
+.toggle input{width:34px;height:34px;margin:0;accent-color:var(--blue);cursor:pointer}
+.brand{font:bold 30px Verdana,Geneva,sans-serif;color:var(--ink)}
+.count{margin-left:auto;font-size:20px;color:var(--muted)}
+.bar .btn.go{height:54px;font-size:20px;padding:0 22px;border-color:var(--good);color:var(--good)}
+.bar .btn.go:hover{background:#E3F5EC}
+/* turn in: the student code goes to the Google Form */
+.ti-modal{position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.45);display:grid;place-items:center;padding:16px;font-family:Verdana,Geneva,sans-serif}
+.ti-card{background:#fff;border:2px solid var(--good);border-radius:16px;padding:22px 26px;width:100%;max-width:560px;max-height:94vh;overflow:auto;display:flex;flex-direction:column;gap:12px;color:var(--ink)}
+.ti-card h2{margin:0;font-size:30px;color:var(--good)}
+.ti-sub{margin:0;font-size:18px}
+.ti-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.ti-q{display:inline-flex;align-items:center;justify-content:center;height:32px;border-radius:8px;border:1.5px solid #cbd5e1;background:#fff;color:#94a3b8;font-weight:bold;font-size:14px}
+.ti-q.done{background:#E3F5EC;border-color:var(--good);color:var(--good)}
+.ti-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;color:var(--muted)}
+.ti-legend>span{display:inline-flex;align-items:center;gap:6px}
+.ti-legend .ti-q{width:22px;height:22px;font-size:11px}
+#tiForm{display:flex;flex-direction:column;gap:8px}
+#tiForm label{font-weight:bold}
+.ti-warn{background:#E3F5EC;border-radius:10px;padding:8px 12px;font-size:15px}
+#tiCode{font:18px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;text-transform:uppercase;max-width:260px;padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:10px}
+#tiCode:focus{outline:2px solid var(--good);outline-offset:1px}
+.ti-card .btn{height:50px;font-size:18px;padding:0 20px;align-self:flex-start}
+.ti-feedback{margin:0;font-size:17px}
+.ti-feedback:empty{display:none}
+.ti-feedback .ok{color:var(--good);font-size:22px;font-weight:800}
+@media (max-width:520px){.ti-grid{grid-template-columns:repeat(5,1fr)}}
+.count b{font-size:32px;color:var(--ink);margin-left:6px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(500px,1fr);gap:28px;min-height:0}
+.stage.solo{grid-template-columns:minmax(0,1fr)}
+.stage.solo .visual{display:none}
+.stage.solo .prompt{max-width:none;font-size:34px}
+.stage.solo .fp{font-size:96px;column-gap:22px;row-gap:34px}
+.stage.solo .fp .fb{height:9px;min-width:140px}
+.stage.solo .fp .eqs{font-size:80px}
+.stage.solo .fp .mul{font-size:64px;gap:12px}
+.stage.solo .fp input{width:180px;height:126px;font-size:76px}
+.stage.solo .fp .mul input{width:132px;height:108px;font-size:60px}
+.visual{overflow:hidden;position:relative;border:2px solid var(--line);border-radius:18px;min-height:0}
+.visual svg{position:absolute;inset:20px;width:calc(100% - 40px);height:calc(100% - 40px)}
+.work{min-width:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:28px;min-height:0}
+
+.eqn{display:flex;align-items:flex-end;gap:12px}
+.term{display:flex;flex-direction:column;align-items:center;gap:10px}
+.tag{min-height:48px;display:flex;align-items:center;justify-content:center}
+.tag .word{font-size:20px;font-weight:bold;color:var(--muted);max-width:130px;line-height:1.15}
+.tag svg{width:46px;height:46px}
+.tag .all{font-size:28px;font-weight:bold;color:var(--muted)}
+.term input,.given{width:128px;height:112px;font:bold 60px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--ink);border-radius:14px;color:var(--ink);background:#fff}
+.given{display:flex;align-items:center;justify-content:center;width:auto;min-width:64px;padding:0 4px;border-color:transparent}
+.given.box{width:128px;border:3px dashed var(--line)}
+.eqn.wide .term input,.eqn.wide .given.box{width:108px}
+.sep{height:112px;display:flex;align-items:center;font:bold 60px Verdana,Geneva,sans-serif}
+.term input:disabled{background:#fff;color:var(--ink);opacity:1}
+.term input.ok{border-color:var(--good);background:#E3F5EC}
+.term input.no{border-color:var(--bad);background:#FCE8E6}
+.term input.shown{border-color:var(--blue);background:#EAF0FB}
+.eqn.stack{flex-direction:column;align-items:center;gap:18px}
+.choices{display:flex;flex-direction:column;gap:14px;width:100%}
+.choice{font:bold 26px Verdana,Geneva,sans-serif;padding:18px 28px;border:3px solid var(--ink);border-radius:14px;background:#fff;color:var(--ink);cursor:pointer}
+.choice:disabled{cursor:default;color:var(--ink)}
+.choice.ok{border-color:var(--good);background:#E3F5EC}
+.choice.no{border-color:var(--bad);background:#FCE8E6}
+.choice.shown{border-color:var(--blue);background:#EAF0FB}
+
+/* book problems */
+.visual.book{display:flex;flex-direction:column;gap:12px;padding:22px 26px}
+.qcard{display:flex;gap:16px;align-items:flex-start;font-size:24px;line-height:1.45;text-align:left;max-width:60ch}
+.qn{flex:none;min-width:52px;height:52px;padding:0 8px;border-radius:12px;background:var(--ink);color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.qcard p{margin:6px 0 0}
+.qcard .rq{white-space:nowrap;font-weight:900;color:var(--ink);font-size:1.12em;background:var(--hl);padding:0 6px;border-radius:6px}
+.dia{flex:1;position:relative;min-height:160px}
+.visual.book .dia svg{position:absolute;inset:0;width:100%;height:100%}
+.visual.book .dia.fbk{flex:2.4}
+.visual.book .dia.two{min-height:110px}
+.term input.long{font-size:40px}
+.given{white-space:nowrap}
+.qn{white-space:nowrap}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-weight:bold;line-height:1.15;margin:0 4px}
+.fr span+span{border-top:3px solid var(--ink);padding:0 6px}
+.guide{display:flex;flex-direction:column;gap:10px;align-items:stretch;min-width:min(100%,420px)}
+.guide:empty{display:none}
+.gstep{display:flex;align-items:center;gap:14px;padding:8px 16px;border:2px solid var(--line);border-radius:12px;text-align:left}
+.gstep.now{border-color:var(--blue);background:#F5F8FE}
+.gn{flex:none;width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;font-weight:bold;font-size:18px;display:flex;align-items:center;justify-content:center}
+.gcap{display:block;font-size:16px;color:var(--muted)}
+.gx{display:flex;align-items:center;gap:10px;font-weight:bold;font-size:30px;flex-wrap:wrap}
+.gx.txt{font-size:20px}
+.gl{font-size:18px;color:var(--muted)} .gl svg{width:30px;height:30px;display:block}
+.gk{color:var(--blue)} .ga{color:var(--good)}
+.kin{width:84px;height:58px;font:bold 30px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--blue);border-radius:10px;color:var(--ink);background:#fff}
+.kin.no{border-color:var(--bad);background:#FCE8E6}
+.eqn.rt input.kin{width:84px;height:62px;font-size:30px;margin:0 8px;border-color:var(--blue)}
+.eqn.rt input.kin.no{border-color:var(--bad)}
+.lock{border-style:dashed!important;border-color:var(--line)!important}
+.fbtabs{display:flex;gap:8px;flex-wrap:wrap}
+.fbtabs button{font:bold 17px Verdana,Geneva,sans-serif;padding:8px 14px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);cursor:pointer}
+.fbtabs button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* answer feedback: proportion, ratio table with unit rate, graph */
+.fx{font-family:Verdana,Geneva,sans-serif;font-weight:bold}
+.f-ik{fill:var(--ink)} .f-mu{fill:var(--muted)} .f-gd{fill:var(--good)} .f-rd{fill:var(--red)} .f-bl{fill:var(--blue)} .f-pu{fill:var(--purple)}
+.f-c1{fill:var(--c1)} .f-c2{fill:var(--c2)} .f-or{fill:#C2410C} .f-gy{fill:#7B8591}
+.f-sm{font-weight:normal}
+.farc{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round}
+.fbar{stroke:var(--ink);stroke-width:4;stroke-linecap:round}
+.fsep{stroke:var(--line);stroke-width:2;stroke-dasharray:6 7}
+.fth{fill:#F3F6FA;stroke:var(--line);stroke-width:2}
+.ftd{fill:#fff;stroke:var(--line);stroke-width:2}
+.ftd.gv{fill:#EAF0FB} .ftd.an{fill:#E3F5EC}
+.fun{fill:none;stroke:var(--purple);stroke-width:5}
+.fgrid{stroke:#E3E8EF;stroke-width:1.5} .fax{stroke:var(--ink);stroke-width:2.5}
+.fline{stroke:var(--blue);stroke-width:3;stroke-dasharray:8 7}
+.flead{stroke:var(--purple);stroke-width:1.5;stroke-dasharray:3 4}
+
+/* ratio-table problems and fraction answers */
+.eqn.rt{flex-direction:column;align-items:stretch;gap:12px}
+/* equivalent ratios as a proportion: original ratio = new ratio */
+.prop{display:grid;grid-template-columns:auto 124px 56px 124px;grid-template-rows:auto auto 80px 6px 80px auto;column-gap:10px;row-gap:6px;align-items:center;justify-items:center;
+  grid-template-areas:". h1 . h2" ". at at at" "l1 a eq c" ". b1 eq b2" "l2 bb eq d" ". ab ab ab"}
+.prop .ph{font-size:15px;font-weight:bold;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.prop .pl{justify-self:end;font-size:20px;font-weight:bold;color:var(--muted);text-align:right;max-width:160px;line-height:1.15}
+.prop .pl svg{width:46px;height:46px;display:block}
+.prop .pg{font:bold 50px Verdana,Geneva,sans-serif;white-space:nowrap}
+.prop .pbar{width:100%;height:6px;background:var(--ink);border-radius:3px}
+.prop .peq{font:bold 54px Verdana,Geneva,sans-serif}
+.prop .parc{width:316px;height:62px;display:block}
+.prop .parc text{font:bold 22px Verdana,Geneva,sans-serif;fill:var(--red)}
+.prop .parc path.ln{fill:none;stroke:var(--red);stroke-width:3.5;stroke-linecap:round}
+.prop input{width:120px;height:78px;font:bold 44px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--ink);border-radius:14px;color:var(--ink);background:#fff}
+.prop input.long{font-size:32px}
+.prop input:disabled{background:#fff;color:var(--ink);opacity:1}
+.prop input.ok{border-color:var(--good);background:#E3F5EC}
+.prop input.no{border-color:var(--bad);background:#FCE8E6}
+.prop input.shown{border-color:var(--blue);background:#EAF0FB}
+.rtab{display:grid;grid-template-columns:auto auto auto auto;border:3px solid var(--ink);border-radius:16px;overflow:hidden;background:#fff}
+.rtab .rh{background:#F3F6FA;font-size:16px;font-weight:bold;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:12px 16px;border-bottom:3px solid var(--ink);text-align:center;white-space:nowrap}
+.rtab .rc{display:flex;align-items:center;justify-content:center;padding:8px 16px;border-top:1.5px solid var(--line)}
+.rtab .rh+.rc,.rtab .rh+.rc+.rc,.rtab .rh+.rc+.rc+.rc,.rtab .rh+.rc+.rc+.rc+.rc{border-top:0}
+.rtab .c2,.rtab .c3,.rtab .c4{border-left:1.5px solid var(--line)}
+.rtab .c3{background:#FFF6F6}
+.rtab .rl{justify-content:flex-end;font-size:20px;font-weight:bold;color:var(--muted);text-align:right;line-height:1.15;max-width:190px}
+.rtab .rc.gv{background:#F2F6FD}
+.rtab .rm{font:bold 38px Verdana,Geneva,sans-serif;gap:8px;min-width:150px}
+.rtab .rm .x{color:var(--red)}
+.rtab .rm .kq{color:var(--blue)}
+.eqn.rt .rtab input.kin{margin:0}
+.rtab input.kmul{width:84px;height:62px;font:bold 30px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--blue);border-radius:10px;color:var(--ink);background:#fff}
+.rtab input.kmul.no{border-color:var(--bad);background:#FCE8E6}
+.rtab .rl{white-space:nowrap}
+.rtab .rl svg{width:46px;height:46px;display:block}
+.rtab .given{background:transparent}
+.rrow .rl{width:150px;text-align:right;font-size:20px;font-weight:bold;color:var(--muted);line-height:1.15}
+.eqn.rt .given,.eqn.rt input,.eqn.rt .given.box,.eqn.rt .sep{height:84px;font-size:42px}
+.eqn.rt input,.eqn.rt .given.box{width:128px}
+.eqn.rt .given{min-width:70px}
+.eqn.rt .sep{font-size:30px;color:var(--muted);white-space:nowrap}
+.eqn.rt .kq{color:var(--blue);margin:0 8px}
+.rtab input{font:bold 42px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--ink);border-radius:14px;color:var(--ink);background:#fff}
+.rtab input.long{font-size:30px}
+.rtab input:disabled{background:#fff;color:var(--ink);opacity:1}
+.rtab input.ok{border-color:var(--good);background:#E3F5EC}
+.rtab input.no{border-color:var(--bad);background:#FCE8E6}
+.rtab input.shown{border-color:var(--blue);background:#EAF0FB}
+.fracw{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding-right:164px}
+.fracw .term{flex-direction:row;gap:14px}
+.fracw .tag{width:150px;justify-content:flex-end;text-align:right}
+.simpw{display:flex;align-items:center;gap:22px}
+.simpw .fracw{padding-right:0}
+.fracs{display:flex;flex-direction:column;align-items:center;gap:12px}
+.fracs .tag{display:none}
+.fracs .fbar3{height:6px;width:148px;background:var(--ink);border-radius:3px}
+.fracw .fbar2{height:6px;width:148px;margin-left:154px;background:var(--ink);border-radius:3px}
+
+.prompt{font-size:30px;line-height:1.35;max-width:20ch}
+.eqn.hidetags .tag{visibility:hidden}
+.feedback{font-size:26px;min-height:36px;font-weight:bold}
+.feedback.good{color:var(--good)} .feedback.bad{color:var(--bad)} .feedback.info{color:var(--blue)}
+.actions{display:flex;gap:14px;flex-wrap:wrap}
+.btn{font:bold 22px Verdana,Geneva,sans-serif;height:62px;padding:0 32px;border-radius:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn[hidden]{display:none}
+:focus-visible{outline:4px solid var(--yellow);outline-offset:2px}
+
+/* svg */
+.c-red{fill:var(--red)} .c-blue{fill:var(--blue)} .c-yellow{fill:var(--yellow)} .c-green{fill:var(--green)} .c-pink{fill:var(--pink)}
+.cnt{font:bold 34px Verdana,Geneva,sans-serif;fill:var(--ink)}
+.cnt.big{font-size:44px}
+.row{transition:opacity .4s}
+.dim{opacity:.15}
+.hlbox{fill:var(--hl)}
+.axis,.tick{stroke:var(--ink);stroke-width:3}
+.arrow{fill:var(--ink)}
+.lbl{font:bold 26px Verdana,Geneva,sans-serif;fill:var(--ink)}
+.lbl.q{fill:var(--blue)}
+.nm{font:bold 24px Verdana,Geneva,sans-serif;fill:var(--muted)}
+.bl{font:bold 24px Verdana,Geneva,sans-serif;fill:var(--ink)}
+.seg{stroke:#fff;stroke-width:3}
+.whole{fill:none;stroke:var(--ink);stroke-width:3;stroke-dasharray:10 8}
+.grp{fill:#F7F9FC;stroke:var(--ink);stroke-width:2.5}
+.pop{animation:pop .4s cubic-bezier(.3,1.4,.6,1) both;transform-box:fill-box;transform-origin:center}
+.rtab .rl,.rtab .c1{grid-column:1}.rtab .c2{grid-column:2}.rtab .c3{grid-column:3}.rtab .c4{grid-column:4}
+.rtab.s1 .c3>*,.rtab.s1 .c4>*,.rtab.s2 .c3>*{visibility:hidden}
+.rtab.s1 .c3,.rtab.s1 .c4,.rtab.s2 .c3{background:#fff}
+.work.tbl .feedback{min-height:72px}
+.rtab .later>*{visibility:hidden}
+.rtab .appear>*{animation:colin .45s ease both}
+.rtab .rc.now{background:#FFF8DB}
+.rtab .rh b{display:block;text-transform:none;letter-spacing:0;font-size:19px;color:var(--ink);white-space:nowrap}
+.rtab .rh small{display:block;font-size:11px;margin-top:3px}
+.rtab.anim4 .c4>*,.rtab.anim3 .c3>*{animation:colin .45s ease both}
+@keyframes colin{from{opacity:0;transform:translateX(-16px)}}
+.eqn.tape{flex-direction:column;align-items:flex-start;gap:14px}
+.tline{display:flex;align-items:center;gap:14px;font:bold 34px Verdana,Geneva,sans-serif;white-space:nowrap}
+.tline .tp{color:var(--muted);font-size:21px;white-space:normal;max-width:220px;line-height:1.15}
+.tline input{width:116px;height:72px;font:bold 38px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--ink);border-radius:12px;color:var(--ink);background:#fff}
+.tline input:disabled{background:#fff;color:var(--ink);opacity:1}
+.tline input.ok{border-color:var(--good);background:#E3F5EC}
+.tline input.no{border-color:var(--bad);background:#FCE8E6}
+.tline input.shown{border-color:var(--blue);background:#EAF0FB}
+.tline input.long{font-size:28px}
+.tline.later{visibility:hidden}
+/* big proportion: a/b = ?/d, with the multiplier box between the known pair */
+.fp{display:grid;grid-auto-flow:column;grid-template-rows:auto 8px auto;column-gap:14px;row-gap:26px;align-items:center;justify-items:center;margin:8px auto;font:bold 64px Verdana,Geneva,sans-serif;color:var(--ink)}
+.fp .fb{width:100%;min-width:96px;height:7px;border-radius:4px;background:var(--ink)}
+.fp .eqs{font-size:52px;color:var(--muted);line-height:0}
+.fp .mul{display:flex;align-items:center;gap:8px;color:var(--bad);font-size:44px}
+.fp .mul.done{color:var(--blue)}
+.fp input{width:128px;height:88px;font:bold 52px Verdana,Geneva,sans-serif;text-align:center;border:3px solid var(--ink);border-radius:14px;color:var(--ink);background:#fff}
+.fp .mul input{width:96px;height:76px;font-size:42px;border-color:var(--blue)}
+.fp input:disabled{opacity:1;background:#fff;color:var(--ink)}
+.fp input.ok{border-color:var(--good);background:#E3F5EC}
+.fp input.no{border-color:var(--bad);background:#FCE8E6}
+.fp input.shown{border-color:var(--blue);background:#EAF0FB}
+.fp .gap{visibility:hidden}
+.tline .tpre{display:none}
+.tline.solved .tpre{display:inline}
+.tline.appear{animation:colin .45s ease both}
+.tbox{stroke:#fff;stroke-width:3}
+.tval{font:bold 22px Verdana,Geneva,sans-serif;fill:#fff}
+.brace{fill:none;stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.cnt.qv{fill:var(--blue)}
+.tval.dk{fill:var(--ink)}
+.xtra{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-dasharray:7 6}
+@keyframes pop{from{opacity:0;transform:scale(.5)}}
+
+.emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.pcard{fill:#F7F9FC;stroke:var(--ink);stroke-width:2.5}
+.pcard.on{fill:var(--hl)}
+.stem{stroke:#3F8F3A;stroke-width:3;stroke-linecap:round}
+.wrapr{fill:#FBE3EC;stroke:#C2479B;stroke-width:2.5;stroke-linejoin:round}
+.bow{fill:#C2479B}
+.plab{font:bold 20px Verdana,Geneva,sans-serif;fill:var(--muted)}
+.pnum{font:bold 26px Verdana,Geneva,sans-serif;fill:var(--ink)}
+.pnum.q{fill:var(--blue)}
+
+/* teacher panel */
+dialog{border:2px solid var(--ink);border-radius:16px;padding:24px 28px;font-family:Verdana,Geneva,sans-serif;color:var(--ink)}
+dialog::backdrop{background:rgba(29,41,57,.35)}
+dialog h2{margin:0 0 14px;font-size:22px}
+dialog table{border-collapse:collapse;font-size:16px}
+dialog th,dialog td{padding:7px 14px;text-align:right;border-bottom:1px solid var(--line)}
+dialog th:first-child,dialog td:first-child{text-align:left;padding-left:0}
+dialog .actions{margin-top:18px}
+dialog .btn{height:46px;font-size:16px;padding:0 18px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.app.narrow .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:18px}
+.app.narrow .work{overflow:visible;gap:20px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">Ratios</div>
+    <label class="toggle" hidden><input type="checkbox" id="guideT" checked> Steps</label>
+    <label class="toggle" id="ansToggle" hidden><input type="checkbox" id="showAns" checked> Answers</label>
+    <div class="count" id="count"></div>
+    <button class="btn go" id="turnBtn" type="button">Turn in</button>
+  </div>
+  <div class="stage">
+    <div class="visual" id="visual"></div>
+    <div class="work">
+      <div class="prompt" id="prompt"></div>
+      <div class="eqn" id="eqn"></div>
+      <div class="guide" id="guide"></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <div class="actions" id="actions"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="teacher">
+  <h2>Teacher stats</h2>
+  <div id="statsTable"></div>
+  <div class="actions">
+    <button class="btn" id="resetStats">Reset saved stats</button>
+    <button class="btn primary" id="closeStats">Close</button>
+  </div>
+</dialog>
+
+<script>
+const PREVIEW=false;
+
+/* ---------- shapes ---------- */
+function starPts(){
+  const p=[];
+  for(let i=0;i<10;i++){const r=i%2?.21:.5,a=-Math.PI/2+i*Math.PI/5;p.push((.5+r*Math.cos(a)).toFixed(3)+','+(.54+r*Math.sin(a)).toFixed(3))}
+  return p.join(' ');
+}
+const SH={
+  circle:  {cls:'c-red',    draw:'<circle cx=".5" cy=".5" r=".46"/>'},
+  square:  {cls:'c-blue',   draw:'<rect x=".06" y=".06" width=".88" height=".88" rx=".14"/>'},
+  triangle:{cls:'c-yellow', draw:'<polygon points=".5,.04 .97,.93 .03,.93"/>'},
+  star:    {cls:'c-green',  draw:'<polygon points="'+starPts()+'"/>'},
+  heart:   {cls:'c-pink',   draw:'<path d="M.5 .92C.1 .62 0 .42 0 .28 0 .12 .13 0 .28 0 .38 0 .46 .06 .5 .15 .54 .06 .62 0 .72 0 .87 0 1 .12 1 .28 1 .42 .9 .62 .5 .92Z"/>'}
+};
+const NAMES={circle:'circles',square:'squares',triangle:'triangles',star:'stars',heart:'hearts'};
+const KEYS=Object.keys(SH);
+const shape=(k,x,y,s)=>`<g transform="translate(${x},${y}) scale(${s})" class="${SH[k].cls}">${SH[k].draw}</g>`;
+const ico=k=>`<svg viewBox="-.04 -.04 1.08 1.08" role="img" aria-label="${NAMES[k]}"><g class="${SH[k].cls}">${SH[k].draw}</g></svg>`;
+
+/* ---------- helpers ---------- */
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const simp=(a,b)=>{const g=gcd(a,b);return [a/g,b/g]};
+const $=id=>document.getElementById(id);
+const inputs=()=>[...document.querySelectorAll('#eqn input:not(.kin):not(.kmul)')];
+
+const st={real:true,bookI:-1,fbi:0,guide:true,g:null,kDone:false,mode:'mix',simplest:false,showAns:true,p:null,attempted:false,done:false,solved:0,streak:0,hist:[],idx:-1};
+
+/* ---------- generators ---------- */
+function genP2P(){
+  const n=Math.random()<.5?2:3, keys=shuffle(KEYS).slice(0,n), counts=keys.map(()=>rand(1,8));
+  const [ia,ib]=shuffle([...Array(n).keys()]).slice(0,2);
+  if(counts[ia]===counts[ib]) counts[ib]=counts[ib]%8+1;
+  return {type:'p2p',rows:keys.map((k,i)=>({k,c:counts[i]})),focus:[keys[ia],keys[ib]],
+    tags:[keys[ia],keys[ib]],ans:[counts[ia],counts[ib]],total:counts.reduce((s,c)=>s+c,0)};
+}
+function genP2W(){
+  const n=Math.random()<.5?2:3, keys=shuffle(KEYS).slice(0,n), counts=keys.map(()=>rand(1,7));
+  const i=rand(0,n-1), A=keys[i], a=counts[i], total=counts.reduce((s,c)=>s+c,0), rev=Math.random()<.45;
+  return {type:'p2w',rows:keys.map((k,j)=>({k,c:counts[j]})),focus:[A],part:a,total,rev,
+    tags:rev?['all',A]:[A,'all'],ans:rev?[total,a]:[a,total]};
+}
+function genEq(){
+  const [A,B]=shuffle(KEYS).slice(0,2);
+  let a=rand(1,5),b=rand(1,5); while(b===a) b=rand(1,5);
+  [a,b]=simp(a,b);
+  const k=rand(2,5), down=Math.random()<.35, small=[a,b], big=[a*k,b*k];
+  const first=down?big:small, second=down?small:big, mi=rand(0,1);
+  return {type:'eq',A,B,a,b,k,down,first,second,mi,ans:second[mi]};
+}
+
+/* ---------- quiz problems: Understanding Ratios (11/19) ---------- */
+const F=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+/* The Understanding Ratios questions are rebuilt every session: the same kinds of problems
+   (same stories), new numbers, shuffled order. */
+const com=n=>n.toLocaleString('en-US');
+const TEACH=['Ms. Rand','Mr. Chen','Mrs. Okafor','Ms. Rivera','Mr. Patel'];
+function chainProb(n,story){   /* A : B and B : C share B; given A, find B and C */
+  let a,b,c; do{a=rand(2,7);b=rand(2,7);c=rand(2,7)}while(new Set([a,b,c]).size<3||gcd(a,b)>1||gcd(b,c)>1);
+  const k=rand(3,12), [L,q,newLab]=story(a,b,c,a*k);
+  return {n,type:'rt',q,rows:[{l:L[0],a,b:a*k},{l:L[1],a:b,b:b*k,m:1},{l:L[2],a:c,b:c*k,m:1}],k,pairs:[[0,1],[1,2]],
+    origLab:'Ratio',newLab,why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} ${L[1]} and ${c} × ${k} = ${c*k} ${L[2]}`};
+}
+function makeQuiz(){
+  const Q=[];
+  Q.push(chainProb('fish',(a,b,c,A)=>[['clown fish','angel fish','goldfish'],
+    `The ratio of clown fish to angel fish at a pet store is ${a}:${b}. The ratio of angel fish to goldfish is ${b}:${c}. There are ${A} clown fish. How many angel fish and goldfish are there?`,'Fish in the store']));
+  Q.push(chainProb('butterflies',(a,b,c,A)=>[['North American','South American','European'],
+    `The ratio of North American butterflies to South American butterflies at a butterfly park is ${a}:${b}. The ratio of South American butterflies to European butterflies is ${b}:${c}. There are ${A} North American butterflies. How many South American and European butterflies are there?`,'Butterflies in the park']));
+  { let r,c; do{r=rand(2,6);c=rand(3,8)}while(r===c); const N=rand(3,8);
+    Q.push({n:'bouquet',type:'rt',q:`In each bouquet of flowers, there are ${r} roses and ${c} white carnations. How many roses and carnations are there in ${N} bouquets?`,
+      rows:[{l:'bouquets',a:1,b:N},{l:'roses',a:r,b:r*N,m:1},{l:'carnations',a:c,b:c*N,m:1}],k:N,pairs:[[0,1],[0,2],[1,2]],
+      origLab:'1 bouquet',newLab:`${N} bouquets`,why:`1 × ${N} = ${N} bouquets, so ${r} × ${N} = ${r*N} roses and ${c} × ${N} = ${c*N} carnations`}); }
+  { let v; do{v=[rand(2,7),rand(2,6),rand(2,7),rand(4,10)]}while(new Set(v).size<4); const [b,a,p,st0]=v, k=rand(2,5), [nm,pr]=one(KID);
+    Q.push({n:'salad',type:'rt',q:`${nm}’s fruit salad recipe uses ${b} bananas, ${a} apples, ${p} pears, and ${st0} strawberries. ${cap(pr)} wants to use ${st0*k} strawberries. How many bananas, apples, and pears should ${pr} use?`,
+      rows:[{l:'strawberries',a:st0,b:st0*k},{l:'bananas',a:b,b:b*k,m:1},{l:'apples',a,b:a*k,m:1},{l:'pears',a:p,b:p*k,m:1}],k,pairs:[[0,1],[0,2],[0,3]],
+      origLab:'Recipe',newLab:`${nm}’s fruit salad`,why:`${st0*k} ÷ ${st0} = ${k}, so ${b*k} bananas, ${a*k} apples, and ${p*k} pears`}); }
+  { const c=rand(1,3), w=rand(1,5)+.5, k=rand(2,5), [nm,pr]=one(KID), J=c+w, cu=x=>x===1?'cup':'cups';
+    Q.push({n:'juice',type:'rt',q:`${nm} needs to mix ${c} ${cu(c)} of orange juice concentrate with ${w} cups of water to make orange juice. ${cap(pr)} has ${c*k} cups of concentrate. How much water does ${pr} need, and how much orange juice can ${pr} make?`,
+      rows:[{l:'concentrate',u:['cups concentrate','cup concentrate'],a:c,b:c*k},{l:'water',u:['cups water','cup water'],a:w,b:w*k,m:1},{l:'orange juice',u:['cups juice','cup juice'],a:J,as:`${c} + ${w}`,b:J*k,m:1}],k,pairs:[[0,1],[0,2]],
+      wrong:[[1,w*k,`${w*k} is just the water. Orange juice is water and concentrate.`]],
+      origLab:'Recipe',newLab:`${nm}’s orange juice`,why:`${c*k} ÷ ${c} = ${k}, so ${w} × ${k} = ${w*k} cups water. ${c*k} + ${w*k} = ${J*k} cups orange juice`}); }
+  { const [a,b]=coprime(2,7,2,6), k=rand(3,9);
+    Q.push({n:'coffee',type:'we',q:`${one(TEACH)} uses ${a} tablespoons of coffee for every ${b} cups of water. How many tablespoons of coffee does she use for ${b*k} cups of water?`.replace(/Mr\. (\w+) uses(.*)she use/,'Mr. $1 uses$2he use'),
+      tags:['coffee','water'],lab:['tbsp coffee','cups water'],fbu:[['tbsp coffee','tbsp coffee'],['cups water','cup water']],vals:[a,b,a*k,b*k],miss:[2],k,
+      origLab:'Recipe',newLab:`${b*k} cups of water`,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} tablespoons`}); }
+  /* the zoo: new counts, five pairs (most of them simplify) */
+  { const names=['elephants','giraffes','lions','seals','otters'], cols=['blue','yellow','red','green','pink'];
+    let c,simp2,plain2; do{c=names.map(()=>rand(6,18));
+      const P=[];for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)if(c[i]!==c[j])P.push(Math.random()<.5?[i,j]:[j,i]);   /* each pair of animals at most once */
+      simp2=shuffle(P.filter(([i,j])=>gcd(c[i],c[j])>1)); plain2=shuffle(P.filter(([i,j])=>gcd(c[i],c[j])===1));
+    }while(new Set(c).size<5||simp2.length<4||!plain2.length);
+    const total=c.reduce((x,y)=>x+y,0), BARS=names.map((l,i)=>({label:l,segs:[{v:c[i],c:cols[i]}]}));
+    const ZOO=`A zoo has ${c[0]} elephants, ${c[1]} giraffes, ${c[2]} lions, ${c[3]} seals, and ${c[4]} otters.`;
+    [...simp2.slice(0,4),plain2[0]].forEach(([i,j])=>{const [x,y]=[c[i],c[j]],[sx,sy]=simp(x,y);
+      Q.push({n:'zoo',type:'wr',kind:'p2p',simp:true,frac:true,q:`${ZOO}<br>What is the ratio of <b class="rq">${names[i]} to ${names[j]}</b>? Write it as a fraction in simplest form.`,
+        tags:[names[i],names[j]],ans:[x,y],total,bars:BARS,barsR:[{...BARS[i],hl:1},{...BARS[j],hl:1},...BARS.filter((r,z)=>z!==i&&z!==j)],
+        why:gcd(x,y)>1?`${x}:${y} = ${sx}:${sy}, so ${sx}/${sy}`:`${x}:${y} is already in simplest form, so ${x}/${y}`})});
+  }
+  /* big proportions: a/b = ?/(b·k) = (a·m)/(b·m) */
+  for(let t=0;t<2;t++){ const [a,b]=coprime(2,9,3,9), k=rand(2,9); let m; do{m=rand(3,15)}while(m===k);
+    Q.push({n:'fp',type:'we',q:'Find the missing term to make the ratios equivalent.',more:[[a*m,b*m]],nofb:true,
+      tags:['',''],lab:['top','bottom'],fbu:[['top number','top'],['bottom number','bottom']],plain:true,vals:[a,b,a*k,b*k],miss:[2],k,
+      origLab:'Fraction',newLab:'Equivalent fraction',why:`${b} × ${k} = ${b*k}, so ${a} × ${k} = ${a*k}. Check: ${a} × ${m} = ${a*m} and ${b} × ${m} = ${b*m}`}); }
+  /* apples to corn muffins: the missing term in the first ratio, then in the second */
+  { const [a,b]=coprime(2,7,3,11), k=rand(4,12);
+    Q.push({n:'muffins1',type:'we',q:`Find the missing term to make the ratios equivalent.<br>${a} apples to <b>?</b> corn muffins<br>${a*k} apples to ${b*k} corn muffins`,
+      tags:['apples','muffins'],fbu:['apples','corn muffins'],vals:[a,b,a*k,b*k],miss:[1],k,origLab:'Ratio',newLab:'Equivalent ratio',why:`${a*k} ÷ ${a} = ${k}, so ${b*k} ÷ ${k} = ${b} corn muffins`}); }
+  { const [a,b]=coprime(2,7,3,11), k=rand(4,13);
+    Q.push({n:'muffins2',type:'we',q:`Find the missing term to make the ratios equivalent.<br>${a} apples to ${b} corn muffins<br>${a*k} apples to <b>?</b> corn muffins`,
+      tags:['apples','muffins'],fbu:['apples','corn muffins'],vals:[a,b,a*k,b*k],miss:[3],k,origLab:'Ratio',newLab:'Equivalent ratio',why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} corn muffins`}); }
+  /* snakes: venomous to non-venomous, venomous to all */
+  { let T,d; do{T=one([2000,2400,3000,3600,4000,4500,5000,6000]);d=one([3,4,5,6,8,10])}while(T%d);
+    const V=T/d, N=T-V, S=`There are more than ${com(T)} species of snakes. About ${com(V)} species are venomous.`, [s1,s2]=simp(V,N);
+    Q.push({n:'snakes1',type:'wr',simp:true,frac:true,q:S+' What is the ratio of venomous snakes to non-venomous snakes in simplest form? Write your answer as a fraction.',
+      tags:['venomous','non-venomous'],ans:[V,N],why:`${com(T)} − ${com(V)} = ${com(N)} non-venomous. ${com(V)}:${com(N)} = ${s1}:${s2}, so ${s1}/${s2}`,
+      wrong:[[[V,T],`That compares to all the snakes. Non-venomous = ${com(T)} − ${com(V)}.`],[[N,V],'Check the order: venomous comes first.']],
+      bars:[{label:'all snakes',segs:[{v:T,c:'green'}]},{label:'venomous',segs:[{v:V,c:'red'}]}],
+      barsR:[{label:'venomous',segs:[{v:V,c:'red'}],hl:1},{label:'non-venomous',segs:[{v:N,c:'green'}],hl:1}]});
+    Q.push({n:'snakes2',type:'wr',simp:true,frac:true,q:S+' What is the ratio of venomous snakes to all snakes in simplest form? Write your answer as a fraction.',
+      tags:['venomous','all'],fbu:['venomous','snakes'],ans:[V,T],why:`${com(V)}:${com(T)} = 1:${d}, so 1/${d}`,
+      wrong:[[[V,N],'Compare to all the snakes, not just the non-venomous ones.'],[[T,V],'Check the order: venomous comes first.']],
+      bars:[{label:'all snakes',segs:[{v:T,c:'green'}]},{label:'venomous',segs:[{v:V,c:'red'}]}],
+      barsR:[{label:'venomous',segs:[{v:V,c:'red'}],hl:1},{label:'all snakes',segs:[{v:V,c:'red'},{v:N,c:'green'}],hl:1}]}); }
+  return shuffle(Q).map(p=>({...p,book:true,set:'quiz'}));
+}
+let QUIZ=[];
+const SETS={quiz:QUIZ};
+
+function nextBook(){const S=SETS[st.mode];st.bookI=(st.bookI+1)%S.length;return S[st.bookI]}
+/* quiz problems also show up in the matching type tabs, mixed in with the generated ones */
+const POOL={};['p2p','p2w','eq'].forEach(m=>POOL[m]={all:QUIZ.filter(p=>p.pool===m),left:[],cool:0});
+function fromPool(m){
+  const P=POOL[m];
+  if(!P.left.length){ if(P.cool>0){P.cool--;return null} P.left=shuffle(P.all); P.cool=6; }
+  return Math.random()<.35?P.left.pop():null;
+}
+
+/* written prompt: students read which groups and which order (no labels over the boxes) */
+const cap=t=>t[0].toUpperCase()+t.slice(1);
+function promptFor(p){
+  const pick=a=>a[rand(0,a.length-1)];
+  if(p.type==='p2p'){
+    const [a,b]=p.tags.map(k=>NAMES[k]);
+    return pick([`The number of ${a} to the number of ${b}`,`${cap(a)} to ${b}`,`The ratio of ${a} to ${b}`,`Compare ${a} to ${b}`]);
+  }
+  const a=NAMES[p.focus[0]];
+  return p.rev
+    ?pick([`All the shapes to ${a}`,`The total number of shapes to the number of ${a}`,`Compare all the shapes to the ${a}`])
+    :pick([`${cap(a)} to all the shapes`,`The number of ${a} to the total number of shapes`,`The ratio of ${a} to all the shapes`]);
+}
+/* ---------- real-life scenarios (random numbers each time) ---------- */
+const one=a=>a[rand(0,a.length-1)];
+const KID=[['Maya','she'],['Jordan','he'],['Luis','he'],['Aisha','she'],['Ethan','he'],['Sofia','she'],['Malik','he'],['Chloe','she'],['Andre','he'],['Priya','she'],['Marcus','he'],['Zoe','she']];
+const money=v=>'$'+(isInt(v)?v:v.toFixed(2));
+const ratioWhy=(x,y,pre)=>{const [a,b]=simp(x,y);return (pre?pre+' ':'')+`${x}:${y}`+(a!==x?` = ${a}:${b}`:'')};
+
+/* "40 vehicles … 22 are cars and 12 are trucks. The rest are motorcycles." */
+const restTxt=(ph,rest,c,h)=>{const t=ph.map((f,i)=>i===h?null:f(c[i])).filter(Boolean);return cap(t.length>1?t.slice(0,-1).join(', ')+' and '+t[t.length-1]:t[0])+'. '+rest[h]};
+/* groups of things to count: [label, singular, low, high] */
+const GRP=[
+ {cat:'School',g:[['boys','boy',8,16],['girls','girl',8,16]],all:['students','student'],whole:'all the students in the class',
+  set:c=>`${one(['Ms. Rivera','Mr. Chen','Mrs. Okafor','Mr. Patel'])}’s class has ${c[0]} boys and ${c[1]} girls.`,
+  alt:(c,h,T)=>`${one(['Ms. Rivera','Mr. Chen','Mrs. Okafor','Mr. Patel'])}’s class has ${T} students. `+restTxt([n=>`${n} are boys`,n=>`${n} are girls`],['The rest are boys.','The rest are girls.'],c,h)},
+ {cat:'Sports',g:[['wins','win',5,14],['losses','loss',2,10]],all:['games','game'],whole:'the number of games played',
+  set:c=>`The ${one(['Riverside Tigers','Eastside Eagles','Lakeview Lions'])} won ${c[0]} games and lost ${c[1]} games this season.`,
+  alt:(c,h,T)=>`The ${one(['Riverside Tigers','Eastside Eagles','Lakeview Lions'])} played ${T} games this season with no ties. `+restTxt([n=>`they won ${n}`,n=>`they lost ${n}`],['They won the rest.','They lost the rest.'],c,h)},
+ {cat:'Sports',g:[['shots made','shot made',6,15],['shots missed','shot missed',3,10]],all:['shots','shot'],whole:'the number of free throws taken',
+  set:c=>{const [k]=one(KID);return `At practice, ${k} made ${c[0]} free throws and missed ${c[1]}.`},
+  alt:(c,h,T)=>{const [k,pr]=one(KID);return `At practice, ${k} took ${T} free throws. `+restTxt([n=>`${pr} made ${n}`,n=>`${pr} missed ${n}`],[`${cap(pr)} made the rest.`,`${cap(pr)} missed the rest.`],c,h)}},
+ {cat:'Survey',g:[['dogs','dog',6,14],['cats','cat',4,12],['fish','fish',2,6]],all:['pets','pet'],whole:'all the pets in the survey',
+  set:c=>`A class took a pet survey. Students have ${c[0]} dogs, ${c[1]} cats, and ${c[2]} fish.`,
+  alt:(c,h,T)=>`A class took a pet survey. Students have ${T} pets: dogs, cats, and fish. `+restTxt([n=>`${n} are dogs`,n=>`${n} are cats`,n=>`${n} are fish`],['The rest are dogs.','The rest are cats.','The rest are fish.'],c,h)},
+ {cat:'Weather',g:[['sunny days','sunny day',8,16],['rainy days','rainy day',4,9],['cloudy days','cloudy day',0,0]],all:['days','day'],whole:'all the days in November',
+  fix:c=>{c[2]=30-c[0]-c[1]}, set:c=>`In November (30 days) there were ${c[0]} sunny days, ${c[1]} rainy days, and ${c[2]} cloudy days.`,
+  alt:(c,h,T)=>`November has ${T} days. `+restTxt([n=>`${n} were sunny`,n=>`${n} were rainy`,n=>`${n} were cloudy`],['The rest were sunny.','The rest were rainy.','The rest were cloudy.'],c,h)},
+ {cat:'Music',g:[['hip-hop songs','hip-hop song',6,18],['pop songs','pop song',4,16],['country songs','country song',2,10]],all:['songs','song'],whole:'all the songs on the playlist',
+  set:c=>{const [k]=one(KID);return `${k}’s playlist has ${c[0]} hip-hop songs, ${c[1]} pop songs, and ${c[2]} country songs.`},
+  alt:(c,h,T)=>{const [k]=one(KID);return `${k}’s playlist has ${T} songs: hip-hop, pop, and country. `+restTxt([n=>`${n} are hip-hop songs`,n=>`${n} are pop songs`,n=>`${n} are country songs`],['The rest are hip-hop songs.','The rest are pop songs.','The rest are country songs.'],c,h)}},
+ {cat:'Lunch',g:[['bought lunch','bought lunch',12,30],['brought lunch','brought lunch',6,20]],all:['students','student'],whole:'all the students in the cafeteria',
+  set:c=>`In the cafeteria, ${c[0]} students bought school lunch and ${c[1]} students brought lunch from home.`,
+  alt:(c,h,T)=>`There are ${T} students in the cafeteria. `+restTxt([n=>`${n} bought school lunch`,n=>`${n} brought lunch from home`],['The rest bought school lunch.','The rest brought lunch from home.'],c,h)},
+ {cat:'Parking',g:[['cars','car',12,30],['trucks','truck',4,12],['motorcycles','motorcycle',2,6]],all:['vehicles','vehicle'],whole:'all the vehicles in the lot',
+  set:c=>`A parking lot has ${c[0]} cars, ${c[1]} trucks, and ${c[2]} motorcycles.`,
+  alt:(c,h,T)=>`A parking lot has ${T} vehicles: cars, trucks, and motorcycles. `+restTxt([n=>`${n} are cars`,n=>`${n} are trucks`,n=>`${n} are motorcycles`],['The rest are cars.','The rest are trucks.','The rest are motorcycles.'],c,h)},
+ {cat:'Snacks',g:[['red','red',4,12],['green','green',3,10],['orange','orange',2,8]],all:['fruit snacks','fruit snack'],whole:'all the fruit snacks in the bag',
+  set:c=>`A bag of fruit snacks has ${c[0]} red, ${c[1]} green, and ${c[2]} orange.`,
+  alt:(c,h,T)=>`A bag has ${T} fruit snacks: red, green, and orange. `+restTxt([n=>`${n} are red`,n=>`${n} are green`,n=>`${n} are orange`],['The rest are red.','The rest are green.','The rest are orange.'],c,h)},
+ {cat:'Library',g:[['fiction books','fiction book',12,40],['nonfiction books','nonfiction book',8,30]],all:['books','book'],whole:'all the books on the shelf',
+  set:c=>`The classroom library has ${c[0]} fiction books and ${c[1]} nonfiction books.`,
+  alt:(c,h,T)=>`The classroom library has ${T} books. `+restTxt([n=>`${n} are fiction`,n=>`${n} are nonfiction`],['The rest are fiction.','The rest are nonfiction.'],c,h)}
+];
+/* the second word in each group's label is enough for the question when it's clear, e.g. "red fruit snacks" */
+const grpName=(sc,i)=>sc.cat==='Snacks'?sc.g[i][0]+' fruit snacks':sc.cat==='Lunch'?`students who ${sc.g[i][0]}`:sc.g[i][0];
+function grpProb(sc,kind){
+  /* Variants, so the numbers are never just read off in order:
+     hide  – the total is given and one group is "the rest" (subtract first)
+     comb  – one side of the ratio is two groups together (add first)
+     plain – every group is listed; the question asks in a different order than the story */
+  const n=sc.g.length, three=n===3, r=Math.random();
+  const v=kind==='p2p'?(three?(r<.35?'hide':r<.7?'comb':'plain'):(r<.7?'hide':'plain'))
+                      :(three?(r<.35?'hide':r<.65?'comb':'plain'):(r<.6?'hide':'plain'));
+  let c; do{c=sc.g.map(g=>rand(g[2],g[3])); if(sc.fix) sc.fix(c)}while(new Set(c).size<n||c.some(x=>x<1));
+  const total=c.reduce((a,b)=>a+b,0), U=k=>[sc.g[k][0],sc.g[k][1]], G=k=>grpName(sc,k), all=sc.all[0];
+  const both=L=>sc.cat==='Snacks'?L.map(x=>sc.g[x][0]).join(' and ')+' fruit snacks':L.map(G).join(' and ');
+  let i,j,h=-1;
+  if(kind==='p2p'){
+    if(v==='plain'){[i,j]=shuffle([...Array(n).keys()]).slice(0,2); if(i<j&&Math.random()<.75)[i,j]=[j,i]}
+    else if(v==='hide'){[i,j]=shuffle([...Array(n).keys()]).slice(0,2); h=Math.random()<.5?i:j}
+    else i=rand(0,n-1);
+  }else{ i=rand(0,n-1); if(v==='hide') h=i }
+  const others=[...Array(n).keys()].filter(x=>x!==i), oSum=others.reduce((t,x)=>t+c[x],0);
+  const story=v==='hide'?sc.alt(c,h,total):sc.set(c);
+  const hideWhy=h<0?'':`${total} − ${others.concat(i).filter(x=>x!==h).map(x=>c[x]).join(' − ')} = ${c[h]} ${sc.g[h][0]}.`;
+  const focus=kind==='p2p'?(v==='comb'?[i,...others]:[i,j]):(v==='comb'?others:[i]);
+  const pic={kind:'count',rows:c.map((x,q)=>({...emo(sc.g[q][0]),l:sc.g[q][0],n:x,hide:q===h})),focus,whole:kind==='p2w',total};
+  const base={book:true,set:kind,n:sc.cat,type:'wr',kind,total,pic};
+  if(kind==='p2p'){
+    if(v==='comb'){
+      const cn=both(others), other=Math.random()<.5, B=other?`all the other ${all}`:`${cn} together`;
+      const rev=Math.random()<.4, lab=other?`other ${all}`:others.map(x=>sc.g[x][0]).join(' + ');
+      const A=[c[i],oSum], tg=[sc.g[i][0],lab], fu=[U(i),[lab,lab]];
+      const why=`${others.map(x=>c[x]).join(' + ')} = ${oSum} ${other?'other '+all:cn}. `;
+      return {...base,q:`${story} What is the ratio of ${rev?B+' to '+G(i):G(i)+' to '+B}?`,
+        tags:rev?tg.reverse():tg,fbu:rev?fu.reverse():fu,ans:rev?A.reverse():A,
+        why:why+(rev?ratioWhy(oSum,c[i]):ratioWhy(c[i],oSum)),
+        wrong:others.map(x=>[rev?[c[x],c[i]]:[c[i],c[x]],other?`Count all the other ${all}, not just the ${G(x)}.`:`Use both groups, not just the ${G(x)}.`])
+          .concat([[rev?[total,c[i]]:[c[i],total],`${total} is all the ${all}. Leave out the ${G(i)}.`]])};
+    }
+    return {...base,q:`${story} What is the ratio of ${G(i)} to ${G(j)}?`,
+      tags:[sc.g[i][0],sc.g[j][0]],fbu:[U(i),U(j)],ans:[c[i],c[j]],why:(hideWhy?hideWhy+' ':'')+ratioWhy(c[i],c[j]),
+      wrong:h<0?[]:[[h===i?[total,c[j]]:[c[i],total],`${total} is all the ${all}. First find the number of ${G(h)}.`]]};
+  }
+  /* part to whole */
+  const rev=Math.random()<.45, sum=`${c.join(' + ')} = ${total} ${all}.`;
+  const part=v==='comb'?oSum:c[i], pName=v==='comb'?both(others)+' together':G(i);
+  const pLab=v==='comb'?others.map(x=>sc.g[x][0]).join(' + '):sc.g[i][0], pU=v==='comb'?[pLab,pLab]:U(i);
+  const why=v==='hide'?hideWhy:v==='comb'?`${others.map(x=>c[x]).join(' + ')} = ${oSum}. `+sum:sum;
+  const wrong=[[rev?[total-part,part]:[part,total-part],`Compare to all the ${all}, not just the rest.`]];
+  if(v==='hide') wrong.push([rev?[total,total-part]:[total-part,total],`That’s the ${both(others)}. Use the ${G(i)}.`]);
+  if(v==='comb') others.forEach(x=>wrong.push([rev?[total,c[x]]:[c[x],total],`Count both groups, not just the ${G(x)}.`]));
+  return {...base,part,rev,
+    q:`${story} What is the ratio of ${rev?sc.whole+' to '+pName:pName+' to '+sc.whole}?`,
+    tags:rev?['all',pLab]:[pLab,'all'],fbu:rev?[sc.all,pU]:[pU,sc.all],
+    ans:rev?[total,part]:[part,total],why:rev?ratioWhy(total,part,why):ratioWhy(part,total,why),wrong};
+}
+
+/* equivalent ratios: one missing number */
+const WE=(o)=>({book:true,set:'eq',type:'we',...o});
+const EQS=[
+ ()=>{const [a,b]=one([[1,4],[2,5],[1,3],[2,7]]),k=rand(2,6);
+  return WE({n:'Recipe',origLab:'Recipe',newLab:'Your lemonade',q:`A lemonade recipe uses ${a} cup${a>1?'s':''} of lemon juice for every ${b} cups of water. How many cups of water do you need for ${a*k} cups of lemon juice?`,
+   tags:['lemon juice','water'],fbu:[['cups lemon juice','cup lemon juice'],['cups water','cup water']],vals:[a,b,a*k,b*k],miss:[3],k,why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} cups of water`})},
+ ()=>{const [a,b]=one([[3,2],[2,5],[4,3],[5,2]]),k=rand(2,6);
+  return WE({n:'Art',origLab:'Ratio',newLab:'Her green paint',q:`To mix the perfect green, an artist uses ${a} parts blue paint for every ${b} parts yellow paint. If she uses ${b*k} parts yellow, how many parts blue does she need?`,
+   tags:['blue','yellow'],fbu:[['parts blue','part blue'],['parts yellow','part yellow']],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} parts blue`})},
+ ()=>{const b=one([3,4,5]),k=rand(4,12);
+  return WE({n:'Party',origLab:'1 pizza',newLab:'The party',q:`One large pizza feeds ${b} people. How many large pizzas do you need to feed ${b*k} people at a party?`,
+   tags:['pizzas','people'],vals:[1,b,k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so 1 × ${k} = ${k} pizzas`})},
+ ()=>{const [kid,pr]=one(KID),[a,b]=one([[24,2],[30,3],[36,3],[45,3],[28,2]]),k=rand(2,4);
+  return WE({n:'Money',origLab:`${b} hours`,newLab:`${b*k} hours`,q:`${kid} earns $${a} for ${b} hours of babysitting. At the same rate, how much will ${pr} earn for ${b*k} hours?`,
+   tags:['$','hours'],lab:['dollars','hours'],fbu:[['dollars','dollar'],['hours','hour']],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so $${a} × ${k} = $${a*k}`})},
+ ()=>{const [a,b]=one([[120,2],[130,2],[195,3],[110,2],[180,3]]),k=rand(2,3);
+  return WE({n:'Travel',origLab:`${b} hours`,newLab:`${b*k} hours`,q:`On a road trip, a car travels ${a} miles in ${b} hours. At the same speed, how far will it go in ${b*k} hours?`,
+   tags:['miles','hours'],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} miles`})},
+ ()=>{const [kid,pr]=one(KID),[a,b]=one([[12,10],[15,20],[9,10],[8,10],[6,5]]),k=rand(2,6);
+  return WE({n:'Reading',origLab:`${b} minutes`,newLab:`${b*k} minutes`,q:`${kid} reads ${a} pages in ${b} minutes. At that pace, how many pages can ${pr} read in ${b*k} minutes?`,
+   tags:['pages','minutes'],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} pages`})},
+ ()=>{const a=one([18,21,24]);
+  return WE({n:'Health',origLab:'15 seconds',newLab:'1 minute',q:`To find your heart rate, you count ${a} heartbeats in 15 seconds. How many times does your heart beat in 60 seconds?`,
+   tags:['beats','seconds'],fbu:[['beats','beat'],['seconds','second']],vals:[a,15,a*4,60],miss:[2],k:4,why:`60 ÷ 15 = 4, so ${a} × 4 = ${a*4} beats per minute`})},
+ ()=>{const [a,b]=one([[20,15],[10,8],[25,20],[20,12],[10,6]]),k=rand(2,Math.floor(100/a));
+  return WE({n:'Phone',origLab:'Charging rate',newLab:`Charging to ${a*k}%`,q:`Your phone charges ${a}% in ${b} minutes. At that rate, how many minutes will it take to charge ${a*k}%?`,
+   tags:['%','minutes'],lab:['percent','minutes'],fbu:[['percent','percent'],['minutes','minute']],vals:[a,b,a*k,b*k],miss:[3],k,why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} minutes`})},
+ ()=>{const [a,b]=one([[1,8],[1,10],[2,15],[1,6],[3,20]]),k=rand(3,8);
+  return WE({n:'Field trip',origLab:'Ratio',newLab:'The field trip',q:`A school needs ${a} adult chaperone${a>1?'s':''} for every ${b} students on a field trip. How many chaperones are needed for ${b*k} students?`,
+   tags:['adults','students'],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} chaperones`})},
+ ()=>{const [a,b]=one([[1,25],[1,20],[2,15],[1,50],[2,25]]),k=rand(2,6);
+  return WE({n:'Map',origLab:'Map scale',newLab:'The two towns',q:`On a map, ${a} inch${a>1?'es':''} stand${a>1?'':'s'} for ${b} miles. Two towns are ${a*k} inches apart on the map. How many miles apart are they in real life?`,
+   tags:['inches','miles'],fbu:[['inches','inch'],['miles','mile']],vals:[a,b,a*k,b*k],miss:[3],k,why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} miles`})},
+ ()=>{const [a,b]=one([[3,4],[2,3],[4,5],[5,6],[2,5]]),k=rand(2,5);
+  return WE({n:'Shopping',origLab:`${a} packs`,newLab:`${a*k} packs`,q:`${a} packs of gum cost $${b}. At the same price, how much do ${a*k} packs cost?`,
+   tags:['packs','$'],lab:['packs','dollars'],fbu:[['packs','pack'],['dollars','dollar']],vals:[a,b,a*k,b*k],miss:[3],k,why:`${a*k} ÷ ${a} = ${k}, so $${b} × ${k} = $${b*k}`})},
+ ()=>{const sm=rand(1,3),pr=rand(9,14),k=rand(2,4);
+  return WE({n:'Movies',origLab:`${sm*k} tickets`,newLab:`${sm} ticket${sm>1?'s':''}`,q:`${sm*k} movie tickets cost $${pr*sm*k}. How much do ${sm} ticket${sm>1?'s':''} cost?`,
+   tags:['tickets','$'],lab:['tickets','dollars'],fbu:[['tickets','ticket'],['dollars','dollar']],vals:[sm*k,pr*sm*k,sm,pr*sm],miss:[3],k,op:'÷',nodia:true,
+   why:`${sm*k} ÷ ${k} = ${sm}, so $${pr*sm*k} ÷ ${k} = $${pr*sm}`})},
+ ()=>{const [it,n,p]=one([[['juice boxes','juice box'],6,9],[['donuts','donut'],4,10],[['water bottles','water bottle'],8,12],[['tacos','taco'],4,7],[['pencils','pencil'],5,6]]);
+  return WE({n:'Unit price',origLab:`Pack of ${n}`,newLab:`1 ${it[1]}`,q:`A pack of ${n} ${it[0]} costs ${money(p)}. How much does 1 ${it[1]} cost?`,
+   tags:[it[0],'$'],lab:[it[0],'dollars'],fbu:[it,['dollars','dollar']],vals:[n,p,1,p/n],miss:[3],k:n,op:'÷',nodia:true,
+   why:`${n} ÷ ${n} = 1, so ${money(p)} ÷ ${n} = ${money(p/n)} each`})},
+ ()=>{const [kid,pr]=one(KID),[a,b]=one([[90,2],[120,3],[75,3],[80,2]]),k=rand(2,5);
+  return WE({n:'Typing',origLab:`${b} minutes`,newLab:`${b*k} minutes`,q:`${kid} types ${a} words in ${b} minutes. At that speed, how many words can ${pr} type in ${b*k} minutes?`,
+   tags:['words','minutes'],vals:[a,b,a*k,b*k],miss:[2],k,why:`${b*k} ÷ ${b} = ${k}, so ${a} × ${k} = ${a*k} words`})},
+ ()=>{const [a,b]=one([[4,1],[6,1],[8,1],[4,3]]),k=rand(2,5);
+  return WE({n:'Slime',origLab:'Recipe',newLab:'Your slime',q:`A slime recipe uses ${a} ounces of glue for every ${b} tablespoon${b>1?'s':''} of contact solution. How many tablespoons of contact solution do you need for ${a*k} ounces of glue?`,
+   tags:['glue','solution'],fbu:[['ounces glue','ounce glue'],['tbsp solution','tbsp solution']],vals:[a,b,a*k,b*k],miss:[3],k,why:`${a*k} ÷ ${a} = ${k}, so ${b} × ${k} = ${b*k} tablespoons`})}
+];
+
+/* recipes with 3 ingredients: ratio table */
+const RECIPES=[
+ {name:'guacamole',rows:[['avocados',3],['limes',1],['tomatoes',2]],have:'You have'},
+ {name:'trail mix',rows:[['cereal',3,['cups cereal','cup cereal']],['pretzels',2,['cups pretzels','cup pretzels']],['raisins',1,['cups raisins','cup raisins']]],unit:'cups of ',have:'You want to use'},
+ {name:'fruit smoothie',rows:[['strawberries',6],['bananas',2],['cups of yogurt',1,['cups yogurt','cup yogurt']]],have:'You have'},
+ {name:'paint',rows:[['red',4,['parts red','part red']],['yellow',3,['parts yellow','part yellow']],['white',1,['parts white','part white']]],unit:'parts ',have:'A painter uses',paint:true}
+];
+function recipeProb(){
+  const R=one(RECIPES), k=rand(2,6), lst=R.rows.map(r=>{const t=`${r[1]} ${R.unit||''}${r[0]}`;return r[1]===1?t.replace(/\b(cups|parts|limes)\b/,w=>w.slice(0,-1)):t});
+  const list=lst.slice(0,-1).join(', ')+', and '+lst[lst.length-1];
+  const g=R.rows[0], others=R.rows.slice(1).map(r=>(R.unit||'')+r[0]).join(' and ');
+  const q=R.paint
+    ?`A custom orange paint is ${list}. ${R.have} ${g[1]*k} parts red. How many ${others} does the painter need?`
+    :`A ${R.name} recipe uses ${list}. ${R.have} ${g[1]*k} ${R.unit||''}${g[0]}. How many ${others} do you need?`;
+  return {book:true,set:'eq',type:'rt',n:'Recipe',q,k,origLab:'Recipe',newLab:R.paint?'The painter’s batch':`Your ${R.name}`,
+    rows:R.rows.map((r,i)=>({l:r[0].replace('cups of ',''),u:r[2],a:r[1],b:r[1]*k,m:i?1:0})),
+    pairs:R.rows.slice(1).map((r,i)=>[0,i+1]),
+    why:`${g[1]*k} ÷ ${g[1]} = ${k}, so `+R.rows.slice(1).map(r=>`${r[1]} × ${k} = ${r[1]*k}`).join(' and ')};
+}
+
+/* better buy: compare unit prices */
+function dealProb(){
+  const it=one([['muffins','muffin'],['juice boxes','juice box'],['notebooks','notebook'],['cookies','cookie'],['sports drinks','sports drink']]);
+  let u1,u2,n1,n2;
+  do{u1=one([50,75,100,125,150,175,200,250]);u2=one([50,75,100,125,150,175,200,250]);n1=rand(2,6);n2=rand(2,6)}while(u1===u2||n1===n2);
+  const p1=u1*n1/100,p2=u2*n2/100, best=u1<u2?0:1;
+  return {book:true,set:'eq',type:'pick',n:'Shopping',
+    q:`Store A sells ${n1} ${it[0]} for ${money(p1)}. Store B sells ${n2} ${it[0]} for ${money(p2)}. Which store has the better buy?`,
+    shown:'Better buy?',choices:['Store A','Store B'],ans:best,
+    why:`A: ${money(p1)} ÷ ${n1} = ${money(u1/100)} each. B: ${money(p2)} ÷ ${n2} = ${money(u2/100)} each. Store ${'AB'[best]} costs less per ${it[1]}.`,
+    nope:`Find the price of 1 ${it[1]} at each store, then compare.`,
+    pic:{kind:'stores',item:emo(it[0]),best,stores:[{n:n1,p:p1,u:u1/100},{n:n2,p:p2,u:u2/100}]}};
+}
+
+
+/* ---------- Tape tab: tape diagrams ---------- */
+const MPAIR=[['dogs','cats','at the animal shelter','animals'],['boys','girls','in the school band','students'],['cars','trucks','in the parking lot','vehicles'],
+  ['fiction books','nonfiction books','on the shelf','books'],['apples','oranges','in the fruit basket','pieces of fruit'],['red marbles','blue marbles','in the jar','marbles']];
+const cntRows=(A,a,B,b)=>[{...(emo(A)||{e:'⬤',f:''}),l:A,n:a},{...(emo(B)||{e:'⬤',f:''}),l:B,n:b}];
+function pickFrom(C){const S=shuffle(C);return {choices:S.map(c=>c.t),ans:S.findIndex(c=>c.ok),nopes:S.map(c=>c.no||'')}}
+function coprime(lo,hi,lo2,hi2){let a,b;do{a=rand(lo,hi);b=rand(lo2,hi2)}while(a===b||gcd(a,b)>1);return [a,b]}
+const TAPE2=[{A:'boys',B:'girls',W:'students',where:'in the school band'},{A:'dogs',B:'cats',W:'animals',where:'at the animal shelter'},
+  {A:'red marbles',B:'blue marbles',W:'marbles',where:'in a jar'},{A:'fiction books',B:'nonfiction books',W:'books',where:'on the shelf'},
+  {A:'tomato plants',B:'pepper plants',W:'plants',where:'in the garden'},{A:'adults',B:'kids',W:'people',where:'at the movie'}];
+const TAPE3=[{R:['peanuts','raisins','pretzels'],lead:'A trail mix uses peanuts, raisins, and pretzels',tot:T=>`You make ${T} cups of trail mix.`,ask:l=>`How many cups of ${l}?`},
+  {R:['dogs','cats','fish'],lead:'The pets at a pet store are dogs, cats, and fish',tot:T=>`There are ${T} pets.`,ask:l=>`How many ${l} are there?`},
+  {R:['pizza','tacos','burgers'],lead:'Students voted for pizza, tacos, and burgers',tot:T=>`There were ${T} votes.`,ask:l=>`How many votes did ${l} get?`},
+  {money:true}];
+const tapeBase=(o)=>({book:true,set:'tape',type:'tape',n:'Tape diagram',...o});
+function tapeThree(){  /* a : b : c with a total */
+  const c=one(TAPE3); let r; do{r=[rand(1,5),rand(2,6),rand(2,7)]}while(new Set(r).size<3||gcd(gcd(r[0],r[1]),r[2])>1);
+  const u=rand(3,12), s=r[0]+r[1]+r[2], T=s*u, k=rand(0,2), cols=['blue','pink','yellow'];
+  let R=c.R, q, M=x=>String(x);
+  if(c.money){const n=shuffle(KID.map(x=>x[0])).slice(0,3);R=n;M=x=>'$'+x;
+    q=`${n[0]}, ${n[1]}, and ${n[2]} share <b class="rq">$${T}</b> in the ratio <b class="rq">${r.join(' : ')}</b>. How much money does ${n[k]} get?`}
+  else q=`${c.lead} in the ratio <b class="rq">${r.join(' : ')}</b>. ${c.tot(T).replace(/(\d+)/,'<b class="rq">$1</b>')} ${c.ask(R[k])}`;
+  return tapeBase({rows:R.map((l,i)=>({l,n:r[i],c:cols[i],key:'r'+i})),u,T,W:c.money?'dollars':'',money:!!c.money,known:'total',ansKey:'r'+k,su:1,q,
+    steps:[{pre:`${r.join(' + ')} =`,ans:s,post:'equal boxes in all',ok:`${s} equal boxes.`,hint:`Count the boxes in all three bars.`},
+           {pre:`${M(T)} ÷ ${s} =`,ans:u,post:'in each box',ok:`Each box is worth ${M(u)}.`,hint:`Share ${M(T)} equally among the ${s} boxes.`},
+           {pre:`${r[k]} × ${M(u)} =`,ans:r[k]*u,post:c.money?`dollars for ${R[k]}`:R[k],hint:`${R[k]} ${c.money?'gets':'fill'} ${r[k]} boxes, and each box is ${M(u)}.`}],
+    why:`${r.join(' + ')} = ${s} boxes. ${M(T)} ÷ ${s} = ${M(u)} per box. ${r[k]} × ${M(u)} = ${M(r[k]*u)}`});
+}
+function tapeHowMore(){  /* total → how many more? */
+  const c=one(TAPE2); let a,b; do{[a,b]=coprime(2,7,3,9)}while(b<=a);
+  const u=rand(3,14), T=(a+b)*u;
+  return tapeBase({rows:[{l:c.A,n:a,c:'blue',key:'A'},{l:c.B,n:b,c:'pink',key:'B'}],u,T,W:c.W,D:(b-a)*u,diff:true,known:'total',ansKey:'diff',su:1,
+    q:`The ratio of ${c.A} to ${c.B} ${c.where} is <b class="rq">${a} : ${b}</b>. There are <b class="rq">${T} ${c.W}</b> in all. How many more ${c.B} than ${c.A} are there?`,
+    steps:[{pre:`${a} + ${b} =`,ans:a+b,post:'equal boxes in all',ok:`${a+b} equal boxes.`,hint:`Count the boxes in both bars.`},
+           {pre:`${T} ÷ ${a+b} =`,ans:u,post:'in each box',ok:`Each box is worth ${u}.`,hint:`Share ${T} equally among the ${a+b} boxes.`},
+           {pre:`${b-a} × ${u} =`,ans:(b-a)*u,post:`more ${c.B}`,hint:`${c.B} have ${b-a} more boxes than ${c.A}, and each box is ${u}.`}],
+    why:`${a} + ${b} = ${a+b} boxes. ${T} ÷ ${a+b} = ${u} per box. ${b-a} extra boxes × ${u} = ${(b-a)*u} more ${c.B}`});
+}
+function tapeFromB(){  /* know the second part → find the first part or the total */
+  const c=one(TAPE2), [a,b]=coprime(3,9,3,9), u=rand(4,15), T=(a+b)*u, toTotal=Math.random()<.5;
+  return tapeBase({rows:[{l:c.A,n:a,c:'blue',key:'A'},{l:c.B,n:b,c:'pink',key:'B'}],u,T,W:c.W,known:'B',ansKey:toTotal?'total':'A',su:0,
+    q:`The ratio of ${c.A} to ${c.B} ${c.where} is <b class="rq">${a} : ${b}</b>. There are <b class="rq">${b*u} ${c.B}</b>. How many ${toTotal?c.W+' are there in all':c.A+' are there'}?`,
+    steps:toTotal?[{pre:`${b*u} ÷ ${b} =`,ans:u,post:'in each box',ok:`Each box is worth ${u}.`,hint:`${c.B} fill ${b} boxes worth ${b*u} in all.`},
+                   {pre:`${a} + ${b} =`,ans:a+b,post:'boxes in all',ok:`${a+b} boxes in all.`,hint:'Count the boxes in both bars.'},
+                   {pre:`${a+b} × ${u} =`,ans:T,post:c.W,hint:`There are ${a+b} boxes, and each box is ${u}.`}]
+                 :[{pre:`${b*u} ÷ ${b} =`,ans:u,post:'in each box',ok:`Each box is worth ${u}.`,hint:`${c.B} fill ${b} boxes worth ${b*u} in all.`},
+                   {pre:`${a} × ${u} =`,ans:a*u,post:c.A,hint:`${c.A} fill ${a} boxes, and each box is ${u}.`}],
+    why:toTotal?`${b*u} ÷ ${b} = ${u} per box. ${a} + ${b} = ${a+b} boxes. ${a+b} × ${u} = ${T} ${c.W}`:`${b*u} ÷ ${b} = ${u} per box. ${a} × ${u} = ${a*u} ${c.A}`});
+}
+const MORE={tape:[tapeThree,tapeThree,tapeHowMore,tapeFromB]}, moreBag={};
+function genMore(m){if(!moreBag[m]||!moreBag[m].length)moreBag[m]=shuffle(MORE[m].map((_,i)=>i));return MORE[m][moreBag[m].pop()]()}
+const REAL={
+  p2p:GRP.map(sc=>()=>grpProb(sc,'p2p')),
+  p2w:GRP.map(sc=>()=>grpProb(sc,'p2w')),
+  eq:[...EQS,recipeProb,recipeProb,dealProb,dealProb]
+};
+const realBag={};
+function genReal(m){
+  if(!realBag[m]||!realBag[m].length) realBag[m]=shuffle(REAL[m].map((_,i)=>i));
+  return REAL[m][realBag[m].pop()]();
+}
+/* one stream, no tabs: the Understanding Ratios questions in order first, then P:P, P:W and tape problems mixed */
+let mixBag=[];
+function gen(){
+  if(!QUIZ.length) QUIZ=makeQuiz();
+  if(st.bookI<QUIZ.length-1){st.bookI++;return QUIZ[st.bookI]}
+  if(!mixBag.length) mixBag=shuffle(['p2p','p2p','p2w','p2w','tape','tape']);
+  const m=mixBag.pop();
+  return m==='tape'?genMore('tape'):genReal(m);
+}
+
+/* ---------- visuals ---------- */
+function rowsSVG(p,revealed){
+  const cell=60,s=46,rowH=74,cntW=70,isW=p.type==='p2w'&&revealed;
+  const max=Math.max(...p.rows.map(r=>r.c));
+  const W=Math.max(max,7)*cell+cntW+40, H=Math.max(p.rows.length,3)*rowH+70;
+  const contentW=max*cell-(cell-s), contentH=p.rows.length*rowH;
+  const x0=(W-contentW-cntW)/2, y0=(H-contentH-(isW?52:0))/2;
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${p.rows.map(r=>r.c+' '+NAMES[r.k]).join(', ')}">`;
+  if(isW){
+    o+=`<rect class="whole" x="${x0-14}" y="${y0-6}" width="${contentW+cntW+20}" height="${contentH+12}" rx="14"/>`;
+    o+=`<text class="cnt" x="${x0-10}" y="${y0+contentH+46}">all: ${p.total}</text>`;
+  }
+  p.rows.forEach((r,i)=>{
+    const y=y0+i*rowH, focus=p.focus.includes(r.k);
+    o+=`<g class="row${revealed&&p.type==='p2p'&&!focus?' dim':''}">`;
+    if(revealed&&focus) o+=`<rect class="hlbox" x="${x0-8}" y="${y+4}" width="${r.c*cell-(cell-s)+16}" height="${rowH-8}" rx="10"/>`;
+    for(let j=0;j<r.c;j++) o+=shape(r.k,x0+j*cell,y+(rowH-s)/2,s);
+    if(revealed) o+=`<text class="cnt" x="${x0+r.c*cell+6}" y="${y+rowH/2+12}">${r.c}</text>`;
+    o+='</g>';
+  });
+  return o+'</svg>';
+}
+function groupsSVG(p,count,caption,animate){
+  const cell=62,s=50,pad=18,gap=28,cols=Math.max(p.a,p.b);
+  const gw=cols*cell-(cell-s)+pad*2, gh=2*cell-(cell-s)+pad*2;
+  const perLine=count<=3?count:Math.ceil(count/2), lines=Math.ceil(count/perLine);
+  const contentW=perLine*gw+(perLine-1)*gap, contentH=lines*gh+(lines-1)*gap;
+  const W=Math.max(contentW+40,560), H=Math.max(contentH+(caption?110:60),330);
+  const x0=(W-contentW)/2, y0=(H-contentH-(caption?66:0))/2;
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${count} group${count>1?'s':''} of ${p.a} ${NAMES[p.A]} and ${p.b} ${NAMES[p.B]}">`;
+  for(let i=0;i<count;i++){
+    const line=Math.floor(i/perLine), inLine=Math.min(perLine,count-line*perLine);
+    const lx=x0+(contentW-(inLine*gw+(inLine-1)*gap))/2;
+    const gx=lx+(i%perLine)*(gw+gap), gy=y0+line*(gh+gap);
+    o+=`<g${animate?` class="pop" style="animation-delay:${i*110}ms"`:''}><rect class="grp" x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="16"/>`;
+    for(let j=0;j<p.a;j++) o+=shape(p.A,gx+pad+j*cell,gy+pad,s);
+    for(let j=0;j<p.b;j++) o+=shape(p.B,gx+pad+j*cell,gy+pad+cell,s);
+    o+='</g>';
+  }
+  if(caption) o+=`<text class="cnt big" text-anchor="middle" x="${W/2}" y="${y0+contentH+62}">${caption}</text>`;
+  return o+'</svg>';
+}
+function dnlSVG(d,revealed){
+  const labW=190, sp=Math.max(72,560/d.k), W=labW+d.k*sp+70, cap=revealed&&!d.full;
+  const H=cap?400:330, y1=120, y2=240, xs=i=>labW+i*sp, hide=d.hide||[];
+  const all=revealed||d.full, ticks=all?[...Array(d.k+1).keys()]:[0,1,d.k];
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Double number line: ${d.labels[0]} and ${d.labels[1]}">`;
+  if(revealed){
+    const hl=hide.map(j=>[j<2?1:d.k,j%2]); if(d.full) hl.push([1,0],[1,1]);
+    hl.forEach(([i,r])=>o+=`<rect class="hlbox" x="${xs(i)-42}" y="${r?y2+18:y1-60}" width="84" height="46" rx="8"/>`);
+  }
+  [y1,y2].forEach((y,r)=>{
+    o+=`<line class="axis" x1="${labW-12}" y1="${y}" x2="${W-34}" y2="${y}"/><polygon class="arrow" points="${W-28},${y} ${W-46},${y-10} ${W-46},${y+10}"/>`;
+    o+=`<text class="nm" text-anchor="end" x="${labW-30}" y="${y+9}">${d.labels[r]}</text>`;
+  });
+  ticks.forEach(i=>{
+    const x=xs(i), mid=revealed&&!d.full&&i>1&&i<d.k&&!PREVIEW;
+    const val=(r)=>{
+      const j=i===1?r:i===d.k?2+r:-1;
+      if(!all&&j>-1&&hide.includes(j)) return '<tspan class="q">?</tspan>';
+      return (r?d.b:d.a)*i;
+    };
+    o+=`<g${mid?` class="pop" style="animation-delay:${(i-1)*90}ms"`:''}>`;
+    o+=`<line class="tick" x1="${x}" y1="${y1-14}" x2="${x}" y2="${y1+14}"/><line class="tick" x1="${x}" y1="${y2-14}" x2="${x}" y2="${y2+14}"/>`;
+    o+=`<text class="lbl" text-anchor="middle" x="${x}" y="${y1-26}">${val(0)}</text><text class="lbl" text-anchor="middle" x="${x}" y="${y2+50}">${val(1)}</text></g>`;
+  });
+  if(cap) o+=`<text class="cnt big" text-anchor="middle" x="${(xs(0)+xs(d.k))/2}" y="${H-22}">× ${d.k}</text>`;
+  return o+'</svg>';
+}
+function barsSVG(rows,revealed){
+  const labW=280,maxW=460,rowH=78,barH=46,tot=r=>r.segs.reduce((s,g)=>s+g.v,0);
+  const sc=maxW/Math.max(...rows.map(tot)), W=labW+maxW+110, H=Math.max(rows.length*rowH+40,300), y0=(H-rows.length*rowH)/2;
+  const anyHl=revealed&&rows.some(r=>r.hl);
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${rows.map(r=>r.label+' '+tot(r)).join(', ')}">`;
+  rows.forEach((r,i)=>{
+    const y=y0+i*rowH; let x=labW;
+    o+=`<g class="row${anyHl&&!r.hl?' dim':''}">`;
+    if(anyHl&&r.hl) o+=`<rect class="hlbox" x="6" y="${y+4}" width="${labW+tot(r)*sc+88}" height="${rowH-8}" rx="10"/>`;
+    o+=`<text class="bl" text-anchor="end" x="${labW-18}" y="${y+rowH/2+9}">${r.label}</text>`;
+    r.segs.forEach(g=>{o+=`<rect class="c-${g.c} seg" x="${x}" y="${y+(rowH-barH)/2}" width="${g.v*sc}" height="${barH}" rx="6"/>`;x+=g.v*sc});
+    o+=`<text class="cnt" x="${x+12}" y="${y+rowH/2+12}">${tot(r)}</text></g>`;
+  });
+  return o+'</svg>';
+}
+
+/* ---------- pictures for word problems (emoji drawn in SVG) ---------- */
+const EMO={
+ /* quiz */
+ 'clown fish':'🐠','angel fish':'🐟','goldfish':['🐟','hue-rotate(160deg) saturate(1.8)'],
+ 'bouquets':'💐','roses':'🌹','carnations':['🌸','saturate(0) brightness(1.12) contrast(1.15)'],'strawberries':'🍓','bananas':'🍌','apples':'🍎','pears':'🍐',
+ 'concentrate':'🍊','water':'💧','north american':['🦋','hue-rotate(165deg) saturate(1.6)'],'south american':'🦋','european':['🦋','hue-rotate(75deg)'],
+ 'tbsp coffee':'☕','cups water':'💧','cups flour':'🌾','cups chips':'🍫','muffins':'🧁',
+ 'elephants':'🐘','giraffes':'🦒','lions':'🦁','seals':'🦭','otters':'🦦',
+ 'all snakes':'🐍','venomous':['🐍','hue-rotate(250deg) saturate(1.5)'],'non-venomous':'🐍',
+ /* 7-1 */
+ 'offices':'🏢','hours':'🕒','tomato':'🍅','pepper':'🫑','adults':'🧑','students':'🧒','dollars':['💵','','$'],'$':['💵','','$'],
+ 'notebooks':'📓','fish':'🐟','gallons':'🪣','boys':'👦','girls':'👧',
+ 'quarters':['🪙','grayscale(1) brightness(1.1)'],'dimes':['🪙','grayscale(1) brightness(1.35)'],'pennies':['🪙','sepia(1) saturate(2.5) hue-rotate(-25deg)'],
+ 'granny smith':'🍏','fuji':'🍎','gala':['🍎','hue-rotate(-35deg)'],'golden delicious':['🍏','hue-rotate(-55deg) saturate(1.4)'],'jonathan':['🍎','brightness(.8)'],
+ /* real life */
+ 'wins':'🏆','losses':'👎','shots made':'✅','shots missed':'❌','dogs':'🐶','cats':'🐱',
+ 'sunny days':'☀️','rainy days':'🌧️','cloudy days':'☁️','hip-hop songs':'🎤','pop songs':'🎵','country songs':'🤠',
+ 'bought lunch':'🍱','brought lunch':'🥪','cars':'🚗','trucks':'🚚','motorcycles':'🏍️','red':'🔴','green':'🟢','orange':'🟠',
+ 'fiction books':'📕','nonfiction books':'📘','lemon juice':'🍋','blue':'🔵','yellow':'🟡','white':'⚪','pizzas':'🍕','people':'🧑',
+ 'miles':'🛣️','pages':'📄','minutes':'⏱️','beats':'❤️','seconds':'⏱️','percent':['🔋','','%'],'inches':'📏','packs':'🍬','tickets':'🎟️',
+ 'juice boxes':'🧃','donuts':'🍩','water bottles':'💧','tacos':'🌮','pencils':'✏️','cookies':'🍪','sports drinks':'🥤',
+ 'words':'💬','glue':'🧴','solution':'🥄','avocados':'🥑','limes':['🍋','hue-rotate(55deg) saturate(1.4)'],'tomatoes':'🍅',
+ 'cereal':'🥣','oranges':'🍊','kids':'🧒','peanuts':'🥜','pizza':'🍕','burgers':'🍔','red marbles':'🔴','blue marbles':'🔵','pretzels':'🥨','raisins':'🍇','yogurt':'🥛'
+};
+const WRAP={'bouquets':'bouquet'};
+function emo(l){const v=EMO[String(l).toLowerCase()];if(!v)return null;return Array.isArray(v)?{e:v[0],f:v[1]||'',fmt:v[2]||''}:{e:v,f:'',fmt:''}}
+const pmoney=v=>'$'+(isInt(v)?v:(+v).toFixed(2));
+const fmtV=(r,n)=>n==null?'?':r.fmt==='$'?pmoney(n):r.fmt==='%'?fnum(n)+'%':n>=1000?(+n).toLocaleString('en-US'):fnum(n);
+const isCnt=(r,n,max)=>!r.fmt&&n!=null&&isInt(n)&&n>=0&&n<=(max||10);
+const emoT=(r,x,y,s)=>`<text class="emo" x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${s}" text-anchor="middle" dominant-baseline="central"${r.f?` style="filter:${r.f}"`:''}>${r.e}</text>`;
+
+function picModel(p){
+  if(p.pic) return p.pic;
+  if(p.type==='we'){
+    if(p.plain) return null;
+    const L=p.lab||p.tags, E=L.map(emo); if(E.some(x=>!x)) return null;
+    const P=propInfo(p); if(!P.op) return null;
+    return {kind:'groups',rows:[0,1].map(i=>({...E[i],l:L[i],a:p.vals[i],b:p.vals[i+2],aMiss:p.miss.includes(i)})),k:P.k,down:P.op==='÷'};
+  }
+  if(p.type==='rt'){
+    const R=p.rows.filter(r=>!r.as), E=R.map(r=>emo(r.l)); if(E.some(x=>!x)) return null;
+    const wrap=R.findIndex(r=>r.a===1&&WRAP[r.l.toLowerCase()]);
+    return {kind:'groups',rows:R.map((r,i)=>({...E[i],l:r.l,a:r.a,b:r.b})),k:p.k,down:false,wrap};
+  }
+  if(p.type==='wr'&&p.bars){
+    const R=p.bars.map(b=>({l:b.label,n:b.segs.reduce((t,g)=>t+g.v,0),...(emo(b.label)||{})}));
+    if(R.some(r=>!r.e)) return null;
+    const T=p.tags.map(t=>t.toLowerCase()), whole=T.includes('all');
+    const focus=R.map((r,i)=>T.some(t=>t===r.l.toLowerCase()||t.split(' + ').includes(r.l.toLowerCase()))?i:-1).filter(i=>i>-1);
+    const m={kind:'count',rows:R,focus,whole,total:p.total};
+    /* simplest-form questions: after answering, regroup into equal groups of the simplified ratio */
+    if(p.simp&&!whole&&p.ans){
+      const RA=R.find(r=>r.l.toLowerCase()===p.tags[0].toLowerCase()), RB=R.find(r=>r.l.toLowerCase()===p.tags[1].toLowerCase());
+      const [a,b]=p.ans, g=gcd(a,b);
+      if(RA&&RB&&a+b<=60&&a/g<=10&&b/g<=10) m.grp={kind:'groups',k:g,down:false,
+        rows:[{...RA,a:a/g,b:a/g},{...RB,a:b/g,b:b/g}],
+        cap:g>1?`${g} equal groups of ${a/g} : ${b/g}`:'Already in simplest form'};
+    }
+    return m;
+  }
+  return null;
+}
+function picSVG(m,revealed){
+  const anim=revealed&&!PREVIEW&&!st.fbShown;
+  if(m.grp&&revealed) return groupPic(m.grp,true,anim);
+  return m.kind==='count'?countPic(m,revealed):m.kind==='stores'?storesPic(m,revealed):groupPic(m,revealed,anim);
+}
+/* rows of things to count */
+function countPic(m,revealed){
+  const s=34,g=s*1.18,per=20,max=40, top=16;
+  const rep=r=>isCnt(r,r.n,max), lines=r=>rep(r)?Math.max(1,Math.ceil(r.n/per)):1;
+  const rowW=r=>rep(r)?Math.max(1,Math.min(r.n,per))*g:g+String(fmtV(r,r.n)).length*s*.66+10;
+  const labW=Math.max(...m.rows.map(r=>r.l.length))*13.5+30, cw=Math.max(...m.rows.map(rowW))+70;
+  let H=0; const ys=m.rows.map(r=>{const y=H;H+=lines(r)*g+10;return y});
+  const extra=m.whole&&revealed?50:0, W=labW+cw+20, TH=H+top*2+extra;
+  let o=`<svg viewBox="0 0 ${W.toFixed(0)} ${TH.toFixed(0)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${m.rows.map(r=>fmtV(r,r.n)+' '+r.l).join(', ')}">`;
+  if(m.whole&&revealed) o+=`<rect class="whole" x="${labW-12}" y="${top-6}" width="${cw}" height="${H+2}" rx="14"/><text class="cnt" x="${labW}" y="${top+H+38}">all: ${fnum(m.total)}</text>`;
+  m.rows.forEach((r,i)=>{
+    const y=top+ys[i], h=lines(r)*g, foc=m.focus.includes(i);
+    o+=`<g class="row${revealed&&!m.whole&&m.focus.length&&!foc?' dim':''}">`;
+    if(revealed&&foc) o+=`<rect class="hlbox" x="${labW-8}" y="${y-3}" width="${rowW(r)+(rep(r)?62:16)}" height="${h+6}" rx="10"/>`;
+    o+=`<text class="bl" text-anchor="end" x="${labW-18}" y="${y+h/2}" dominant-baseline="central">${r.l}</text>`;
+    if(r.hide&&!revealed) o+=`<text class="cnt qv" x="${labW+6}" y="${y+h/2}" dominant-baseline="central">?</text>`;
+    else if(rep(r)){
+      for(let j=0;j<r.n;j++) o+=emoT(r,labW+g*(j%per+.5),y+g*(Math.floor(j/per)+.5),s);
+      if(revealed) o+=`<text class="cnt" x="${labW+Math.min(r.n,per)*g+10}" y="${y+h/2}" dominant-baseline="central">${r.n}</text>`;
+    }else o+=emoT(r,labW+g/2,y+g/2,s)+`<text class="cnt" x="${labW+g+6}" y="${y+g/2}" dominant-baseline="central">${fmtV(r,r.n)}</text>`;
+    o+='</g>';
+  });
+  return o+'</svg>';
+}
+/* equal groups: the original ratio as one group, then the groups that make the new ratio */
+function groupPic(m,revealed,anim){
+  const s=30,g=s*1.18,R=m.rows,k=m.k, op=m.down?'÷':'×';
+  const va=R.map(r=>r.a), vb=R.map(r=>r.b);
+  const nEmo=v=>R.reduce((t,r,i)=>t+(isCnt(r,v[i])?v[i]:1),0);
+  const copies=isInt(k)&&k<=12&&k*nEmo(m.down?vb:va)<=170;
+  let cards,cap='',hl=-1,mid='';
+  if(!revealed) cards=[R.map(r=>r.aMiss?null:r.a)];
+  else if(copies){cards=Array(k).fill(m.down?vb:va);cap=m.cap||`${op} ${fnum(k)}`;if(m.down)hl=0}
+  else {cards=[va,vb];mid=`${op} ${fnum(k)}`;hl=1}
+  const rowW=(r,v)=>isCnt(r,v)?Math.max(1,v)*g:g+String(fmtV(r,v)).length*s*.64+8;
+  /* bouquet: the flowers sit together in one wrapped bunch */
+  const W8=m.wrap>-1&&m.wrap!=null, fl=c=>R.flatMap((r,i)=>i===m.wrap||c[i]==null?[]:[...Array(isCnt(r,c[i])?c[i]:0)].map(()=>r));
+  const mix=L=>{const by=R.map(r=>L.filter(x=>x===r)).filter(a=>a.length),out=[];while(by.some(a=>a.length))by.forEach(a=>{if(a.length)out.push(a.pop())});return out};
+  const domes=N=>{const n=N<=4?1:N<=9?2:3,b=Math.floor(N/n),sz=Array(n).fill(b);let rem=N-b*n;for(let i=Math.floor(n/2);rem>0;i=(i+1)%n,rem--)sz[i]++;return sz};
+  let cw,ch;
+  if(W8){const mx=Math.max(...cards.map(c=>Math.max(...domes(fl(c).length)))); cw=mx*g*.86+40; ch=domes(Math.max(...cards.map(c=>fl(c).length))).length*g*.82+g*1.7+26}
+  else{cw=Math.max(...cards.flatMap(c=>R.map((r,i)=>rowW(r,c[i]))))+24; ch=R.length*g+18}
+  const gap=mid?120:22;
+  const n=cards.length, per=mid?2:n<=4?n:n<=8?Math.ceil(n/2):Math.ceil(n/3), lines=Math.ceil(n/per);
+  /* legend: picture = what it stands for */
+  const lw=R.map(r=>g+r.l.length*11+34), legW=lw.reduce((a,b)=>a+b,0);
+  const gridW=per*cw+(per-1)*gap, W=Math.max(legW,gridW,m.cap&&revealed?m.cap.length*17:0)+40, legH=52, capH=(cap||!revealed)?56:10;
+  const H=legH+lines*ch+(lines-1)*gap+capH+16;
+  let o=`<svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${revealed?n+' equal groups':'One group'}: ${R.map((r,i)=>fmtV(r,cards[0][i])+' '+r.l).join(', ')}">`;
+  let lx=(W-legW)/2;
+  R.forEach((r,i)=>{o+=(W8&&i===m.wrap?`<path class="wrapr" transform="translate(${lx+g/2-10},14)" d="M0,0 H20 L13,24 H7 Z"/>`:emoT(r,lx+g/2,26,s*.85))+`<text class="plab" x="${lx+g+2}" y="26" dominant-baseline="central">${r.l}</text>`;lx+=lw[i]});
+  cards.forEach((c,i)=>{
+    const line=Math.floor(i/per), inLine=Math.min(per,n-line*per), x0=(W-(inLine*cw+(inLine-1)*gap))/2;
+    const x=x0+(i%per)*(cw+gap), y=legH+line*(ch+gap);
+    o+=`<g${anim&&!mid?` class="pop" style="animation-delay:${i*90}ms"`:''}><rect class="pcard${i===hl?' on':''}" x="${x}" y="${y}" width="${cw}" height="${ch}" rx="14"/>`;
+    if(W8){
+      const F=mix(fl(c)), sz=domes(F.length), cx=x+cw/2, fh=sz.length*g*.82, top=y+12, coneY=top+fh+g*.05, cone=g*1.55, cwid=Math.min(cw-28,g*2.6);
+      /* stems, wrap, ribbon */
+      for(let q=-2;q<=2;q++) o+=`<line class="stem" x1="${cx+q*g*.45}" y1="${top+fh-g*.3}" x2="${cx+q*3}" y2="${coneY+cone*.8}"/>`;
+      o+=`<path class="wrapr" d="M${cx-cwid/2},${coneY-g*.15} L${cx+cwid/2},${coneY-g*.15} L${cx+g*.28},${coneY+cone} L${cx-g*.28},${coneY+cone} Z"/>`;
+      o+=`<path class="bow" d="M${cx},${coneY+cone*.45} l-${g*.42},-${g*.22} v${g*.44} Z M${cx},${coneY+cone*.45} l${g*.42},-${g*.22} v${g*.44} Z"/><circle class="bow" cx="${cx}" cy="${coneY+cone*.45}" r="${g*.11}"/>`;
+      let q=0; sz.forEach((nr,li)=>{const yy=top+g*.5+li*g*.82; for(let j=0;j<nr;j++,q++) o+=emoT(F[q],cx+(j-(nr-1)/2)*g*.86,yy,s)});
+    }else R.forEach((r,j)=>{const v=c[j], cy=y+9+g*(j+.5);
+      if(isCnt(r,v)) for(let q=0;q<v;q++) o+=emoT(r,x+12+g*(q+.5),cy,s);
+      else o+=emoT(r,x+12+g/2,cy,s)+`<text class="pnum${v==null?' q':''}" x="${x+12+g+4}" y="${cy}" dominant-baseline="central">${fmtV(r,v)}</text>`;
+    });
+    o+='</g>';
+  });
+  if(mid) o+=`<text class="cnt big" text-anchor="middle" x="${W/2}" y="${legH+ch/2}" dominant-baseline="central">${mid} →</text>`;
+  const cy=legH+lines*ch+(lines-1)*gap+38;
+  if(cap) o+=`<text class="cnt${m.cap?'':' big'}" text-anchor="middle" x="${W/2}" y="${cy}"${m.cap?' font-size="30"':''}>${cap}</text>`;
+  else if(!revealed) o+=`<text class="plab" text-anchor="middle" x="${W/2}" y="${cy-6}">${W8?'1 '+WRAP[R[m.wrap].l.toLowerCase()]+' (original ratio)':'original ratio'}</text>`;
+  return o+'</svg>';
+}
+/* better buy: two stores */
+function storesPic(m,revealed){
+  const s=36,g=s*1.18,r=m.item, cw=Math.max(...m.stores.map(t=>t.n))*g+40, ch=revealed?190:150, gap=50, W=2*cw+gap+40, H=ch+20;
+  let o=`<svg viewBox="0 0 ${W.toFixed(0)} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${m.stores.map((t,i)=>'Store '+'AB'[i]+': '+t.n+' for '+pmoney(t.p)).join('; ')}">`;
+  m.stores.forEach((t,i)=>{const x=20+i*(cw+gap), y=10;
+    o+=`<rect class="pcard${revealed&&i===m.best?' on':''}" x="${x}" y="${y}" width="${cw}" height="${ch}" rx="16"/>`;
+    o+=`<text class="bl" text-anchor="middle" x="${x+cw/2}" y="${y+30}">Store ${'AB'[i]}</text>`;
+    for(let q=0;q<t.n;q++) o+=emoT(r,x+20+g*(q+.5),y+72,s);
+    o+=`<text class="cnt" text-anchor="middle" x="${x+cw/2}" y="${y+128}">${pmoney(t.p)}</text>`;
+    if(revealed) o+=`<text class="lbl q" text-anchor="middle" x="${x+cw/2}" y="${y+170}">${pmoney(t.u)} each</text>`;
+  });
+  return o+'</svg>';
+}
+
+
+/* tape diagram: two bars of equal boxes; values appear as the steps are solved */
+function tapeSVG(p,revealed){
+  const done=revealed?99:(st.ts||0), showU=done>p.su, bw=60,bh=50, top=30, gap=28, R=p.rows, M=x=>p.money?'$'+x:String(x);
+  const lab=Math.max(...R.map(r=>r.l.length))*13+40, n=Math.max(...R.map(r=>r.n)), barEnd=lab+n*bw, yEnd=top+R.length*bh+(R.length-1)*gap;
+  const W=barEnd+300, H=yEnd+(p.diff?96:44);
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Tape diagram: ${R.map(r=>r.l+' '+r.n+' boxes').join(', ')}">`;
+  R.forEach((r,i)=>{
+    const y=top+i*(bh+gap), val=r.n*p.u, show=revealed||p.known===r.key, asked=p.ansKey===r.key;
+    if(revealed&&asked) o+=`<rect class="hlbox" x="${lab-10}" y="${y-7}" width="${r.n*bw+40+M(val).length*24}" height="${bh+14}" rx="10"/>`;
+    o+=`<text class="bl" text-anchor="end" x="${lab-16}" y="${y+bh/2}" dominant-baseline="central">${r.l}</text>`;
+    for(let j=0;j<r.n;j++){
+      o+=`<rect class="c-${r.c} tbox" x="${lab+j*bw}" y="${y}" width="${bw}" height="${bh}"/>`;
+      if(showU) o+=`<text class="tval${r.c==='yellow'?' dk':''}" x="${lab+j*bw+bw/2}" y="${y+bh/2}" text-anchor="middle" dominant-baseline="central">${M(p.u)}</text>`;
+    }
+    if(show||asked) o+=`<text class="cnt${show?'':' qv'}" x="${lab+r.n*bw+14}" y="${y+bh/2}" dominant-baseline="central">${show?M(val):'?'}</text>`;
+  });
+  if(p.diff){  /* bracket under the extra boxes of the bigger bar */
+    const s=R[0].n, L=R[1].n, y=top+bh+gap+bh+10, x1=lab+s*bw, x2=lab+L*bw, show=revealed||p.known==='diff';
+    o+=`<rect class="xtra" x="${x1}" y="${top+bh+gap-4}" width="${x2-x1}" height="${bh+8}" rx="6"/>`;
+    o+=`<path class="brace" d="M${x1},${y} q0,12 12,12 h${(x2-x1)/2-24} q12,0 12,12 q0,-12 12,-12 h${(x2-x1)/2-24} q12,0 12,-12"/>`;
+    if(revealed&&p.ansKey==='diff') o+=`<rect class="hlbox" x="${(x1+x2)/2-60}" y="${y+28}" width="120" height="40" rx="8"/>`;
+    o+=`<text class="cnt${show?'':' qv'}" text-anchor="middle" x="${(x1+x2)/2}" y="${y+50}" dominant-baseline="central" font-size="26">${show?p.D+' more':'? more'}</text>`;
+  }
+  if(p.known==='total'||p.ansKey==='total'){
+    const bx=barEnd+120, y1=top, y2=yEnd, h=(y2-y1)/2, show=revealed||p.known==='total';
+    o+=`<path class="brace" d="M${bx},${y1} q14,0 14,14 v${h-28} q0,14 14,14 q-14,0 -14,14 v${h-28} q0,14 -14,14"/>`;
+    if(revealed&&p.ansKey==='total') o+=`<rect class="hlbox" x="${bx+34}" y="${y1+h-28}" width="${M(p.T).length*24+28}" height="56" rx="10"/>`;
+    o+=`<text class="cnt${show?'':' qv'}" x="${bx+44}" y="${y1+h}" dominant-baseline="central">${show?M(p.T):'?'}</text>`;
+    o+=`<text class="plab" x="${bx+44}" y="${y1+h+44}">${p.money?'in all':p.W}</text>`;
+  }
+  return o+'</svg>';
+}
+function tapeInput(t){
+  const ins=inputs(), i=ins.indexOf(t); if(i!==st.ts) return;
+  t.classList.remove('ok','no');
+  if(t.value!==''&&+t.value===st.p.steps[i].ans) tapeOk();
+}
+function tapeOk(){
+  const ins=inputs(), i=st.ts; ins[i].classList.remove('no'); ins[i].classList.add('ok'); ins[i].disabled=true; st.ts++;
+  renderVisual(false);
+  if(st.ts<ins.length){
+    const L=document.querySelectorAll('#eqn .tline')[st.ts]; L.classList.remove('later'); L.classList.add('appear');
+    const nx=ins[st.ts]; nx.disabled=false; say('good','✓ '+(st.p.steps[i].ok||'')); $('showBtn').hidden=true;
+    nx.focus(); requestAnimationFrame(()=>nx.focus());
+  }else check();
+}
+function tapeCheck(){
+  const ins=inputs(), el=ins[st.ts], s=st.p.steps[st.ts];
+  if(!el.value){say('info','Fill in the box.');el.focus();return}
+  if(+el.value===s.ans){tapeOk();return}
+  record(false); el.classList.add('no'); say('bad',s.hint[0].toUpperCase()+s.hint.slice(1)); $('showBtn').hidden=false; el.focus(); el.select();
+}
+function bookDia(p,revealed){
+  if(p.type==='tape') return tapeSVG(p,revealed);
+  const pm=picModel(p); if(pm) return picSVG(pm,revealed);
+  if(p.nodia) return '';
+  if(p.type==='rt'||(p.set==='quiz'&&p.bars)) return '';   /* no bar diagrams on quiz questions */
+  if(p.type==='p2p'||p.type==='p2w') return rowsSVG(p,revealed);
+  if(isFP(p)) return '';
+  if(p.type==='we') return dnlSVG({labels:p.lab||p.tags,a:p.vals[0],b:p.vals[1],k:p.k,hide:p.miss},revealed);
+  if(p.dnl) return dnlSVG(p.dnl,revealed);
+  if(p.bars) return barsSVG(revealed&&p.barsR?p.barsR:p.bars,revealed);
+  return '';
+}
+/* ---------- answer feedback: proportion, ratio table with unit rate, graph ---------- */
+const r3=v=>+(+v).toFixed(3), fnum=v=>String(r3(v));
+const isNice=v=>Math.abs(v*1000-Math.round(v*1000))<1e-6;
+const isInt=v=>Math.abs(v-Math.round(v))<1e-9;
+function sing(u){
+  if(/ies$/.test(u)) return u.slice(0,-3)+'y';
+  if(/[^su]s$/.test(u)) return u.slice(0,-1);
+  return u;
+}
+function fracTxt(n,d){let k=1;while((!isInt(n*k)||!isInt(d*k))&&k<1000)k*=10;const N=Math.round(n*k),D=Math.round(d*k),g=gcd(N,D);return D/g===1?String(N/g):`${N/g}/${D/g}`}
+const sameCol=(x,y)=>Math.abs(x[0]-y[0])<1e-6&&Math.abs(x[1]-y[1])<1e-6;
+/* one feedback card per ratio in the problem */
+function ratioFb(u,[a,b]){const g=gcd(a,b);return g>1?{u,c:[a,b,a/g,b/g],op:'÷',k:g,ans:[]}:{u,c:[a,b],ans:[]}}
+function fbFor(p){
+  if(p.nofb) return [];
+  const nm=t=>SH[t]?NAMES[t]:t==='all'?(p.rows?'shapes':'total'):t==='$'?'dollars':t;
+  if(p.type==='eq') return [{u:[NAMES[p.A],NAMES[p.B]],c:[...p.first,...p.second],op:p.down?'÷':'×',k:p.k,ans:[2+p.mi]}];
+  if(p.type==='we') return [{u:p.fbu||(p.lab||p.tags).map(nm),c:p.vals,op:p.op||'×',k:p.k,ans:p.miss,plain:p.plain}];
+  if(p.type==='rt') return p.pairs.map(([i,j])=>{const A=p.rows[i],B=p.rows[j];
+    return {tab:`${A.l} : ${B.l}`,u:[A.u||A.l,B.u||B.l],c:[A.a,B.a,A.b,B.b],op:'×',k:p.k,ans:[A.m?2:-1,B.m?3:-1]}});
+  if(p.type==='pick') return p.fbr?[ratioFb(p.fbr.u,p.fbr.r)]:[];
+  if(p.ans&&p.ans.length===2) return [ratioFb(p.fbu||p.tags.map(nm),p.ans)];
+  return [];
+}
+function fbModel(d){
+  const [a,b]=d.c, U=d.u.map(x=>Array.isArray(x)?x:[x,sing(x)]);
+  const vt=b/a, vb=a/b;
+  let flip=isNice(vt)!==isNice(vb)?isNice(vb):vt<1;      /* pick the friendlier unit rate */
+  if(U[0][0]==='dollars'&&isNice(vb)) flip=true;
+  if(U[1][0]==='dollars'&&isNice(vt)) flip=false;
+  const v=flip?vb:vt, nice=isNice(v), txt=nice?fnum(v):flip?fracTxt(a,b):fracTxt(b,a);
+  const ucol=flip?[v,1]:[1,v];
+  const pts=[[d.c[0],d.c[1]]]; if(d.c.length===4) pts.push([d.c[2],d.c[3]]);
+  let cols=pts.slice(); cols.push(ucol);
+  if(d.c.every(isInt)){
+    const g=gcd(a,b), a0=a/g, b0=b/g, n=Math.max(...pts.map(q=>q[0]))/a0;
+    cols.push([a0,b0]);
+    const uniq=()=>cols.filter((c,i)=>cols.findIndex(x=>sameCol(x,c))===i);
+    for(let i=2;i<n&&uniq().length<5;i++) cols.push([a0*i,b0*i]);
+  }
+  cols=cols.filter((c,i)=>cols.findIndex(x=>sameCol(x,c))===i).sort((x,y)=>x[0]-y[0]);
+  const yU=flip?U[0]:U[1], xU=flip?U[1]:U[0];
+  const phrase=d.plain?txt:yU[0]==='dollars'?`$${v.toFixed(2)} per ${xU[1]}`:`${txt} ${Math.abs(v-1)<1e-9?yU[1]:yU[0]} per ${xU[1]}`;
+  const rhs=txt==='1'?'x':txt.includes('/')?`(${txt})x`:`${txt}x`;
+  return {U,flip,v,nice,txt,ucol,pts,cols,phrase,rhs,xn:xU[0],yn:yU[0]};
+}
+function niceStep(max){const raw=max/5,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<=1?1:m<=2?2:m<=5?5:10)*p}
+function fbSVG(d){
+  const m=fbModel(d), W=1040, H=540, [U0,U1]=m.U, two=d.c.length===4;
+  const T=(t,x,y,fs,cls,anc,extra)=>`<text class="fx ${cls}" x="${x}" y="${y}" font-size="${(+fs).toFixed(1)}" text-anchor="${anc||'middle'}"${extra||''}>${t}</text>`;
+  const fit=(t,max,fs)=>Math.min(fs,max/(String(t).length*.66));
+  let o=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${two?'Proportion, ratio':'Ratio'} table with unit rate ${m.phrase}, and graph of y = ${m.rhs}">`;
+  o+=`<line class="fsep" x1="550" y1="10" x2="550" y2="${H-10}"/><line class="fsep" x1="12" y1="318" x2="538" y2="318"/>`;
+
+  /* 1. proportion */
+  const xa=two?292:340, xb=424, yT=142, yBar=158, yB=208;
+  o+=T(two?'Proportion':'Ratio',14,36,21,'f-mu','start');
+  o+=T(U0[0],xa-66,yT-8,fit(U0[0],200,22),'f-c1','end')+T(U1[0],xa-66,yB-8,fit(U1[0],200,22),'f-c2','end');
+  const fr=(x,i)=>{const t=fnum(d.c[i]),b=fnum(d.c[i+1]),g=j=>d.ans.includes(j)?'f-gd':'f-ik';
+    return T(t,x,yT,fit(t,96,42),g(i))+`<line class="fbar" x1="${x-46}" y1="${yBar}" x2="${x+46}" y2="${yBar}"/>`+T(b,x,yB,fit(b,96,42),g(i+1))};
+  o+=fr(xa,0);
+  if(two){
+    const xm=(xa+xb)/2, lab=`${d.op} ${fnum(d.k)}`;
+    o+=T('=',xm,yBar+13,38,'f-ik')+fr(xb,2);
+    o+=`<defs><marker id="fah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="f-rd" d="M0,0 L10,5 L0,10z"/></marker></defs>`;
+    o+=`<path class="farc" d="M${xa},${yT-48} Q${xm},${yT-120} ${xb-5},${yT-50}" marker-end="url(#fah)"/>`+T(lab,xm,yT-100,30,'f-rd');
+    o+=`<path class="farc" d="M${xa},${yB+16} Q${xm},${yB+88} ${xb-5},${yB+18}" marker-end="url(#fah)"/>`+T(lab,xm,yB+88,30,'f-rd');
+  }
+
+  /* 2. ratio table with the unit rate */
+  const n=m.cols.length, cw=Math.min(96,356/n), tw=166+n*cw, tx=12+(526-tw)/2, ty=384, rh=58;
+  o+=T('Ratio table',14,348,21,'f-mu','start');
+  [U0,U1].forEach((u,r)=>{o+=`<rect class="fth" x="${tx}" y="${ty+r*rh}" width="166" height="${rh}"/>`+T(u[0],tx+10,ty+r*rh+38,Math.min(22,150/(u[0].length*.6)),r?'f-c2':'f-c1','start')});
+  const ansCol=d.ans.some(i=>i>=0)?m.pts[Math.floor(d.ans.find(i=>i>=0)/2)]:null;
+  let ux=0;
+  m.cols.forEach((col,i)=>{
+    const x=tx+166+i*cw, isU=sameCol(col,m.ucol), cls=ansCol&&sameCol(col,ansCol)?'an':m.pts.some(q=>sameCol(q,col))?'gv':'';
+    if(isU) ux=x;
+    col.forEach((v,r)=>{const t=isU&&!m.nice&&r===(m.flip?0:1)?m.txt:fnum(v);
+      o+=`<rect class="ftd ${cls}" x="${x}" y="${ty+r*rh}" width="${cw}" height="${rh}"/>`+T(t,x+cw/2,ty+r*rh+39,fit(t,cw-12,28),cls==='an'?'f-gd':'f-ik')});
+    if(!isU){const k=col[m.flip?1:0];if(isNice(k)){const t='×'+fnum(k);o+=T(t,x+cw/2,ty-12,fit(t,cw-4,20),'f-bl')}}
+  });
+  o+=`<rect class="fun" x="${ux}" y="${ty}" width="${cw}" height="${rh*2}" rx="3"/>`+T('unit rate',Math.max(tx+50,Math.min(ux+cw/2,tx+tw-50)),ty+rh*2+27,19,'f-pu');
+  const l1='Unit rate: '+m.phrase, xy=`x = ${m.xn}, y = ${m.yn}`;
+  o+=`<text class="fx f-ik" x="800" y="436" font-size="${fit(l1,468,25).toFixed(1)}" text-anchor="middle">Unit rate: <tspan class="f-pu">${m.phrase}</tspan></text>`;
+  o+=`<text class="fx f-ik" x="800" y="484" font-size="27" text-anchor="middle">Equation: <tspan class="f-bl">y = ${m.rhs}</tspan></text>`;
+  o+=T(xy,800,516,fit(xy,468,19),'f-mu f-sm');
+
+  /* 3. graph */
+  const gx=m.flip?1:0, gy=1-gx, G=c=>[c[gx],c[gy]], P=m.pts.map(G).sort((p,q)=>p[0]-q[0]);
+  const X0=664,Y0=312,PW=356,PH=256;
+  const mxv=Math.max(...P.map(q=>q[0]))*1.1, myv=Math.max(...P.map(q=>q[1]))*1.1;
+  const sx=niceStep(mxv), sy=niceStep(myv), xm=Math.ceil(mxv/sx-1e-9)*sx, ym=Math.ceil(myv/sy-1e-9)*sy;
+  const X=v=>X0+v/xm*PW, Y=v=>Y0-v/ym*PH, cx=m.flip?'f-c2':'f-c1', cy=m.flip?'f-c1':'f-c2';
+  o+=T('Graph',564,36,21,'f-mu','start');
+  for(let v=0;v<=xm+1e-9;v+=sx) o+=`<line class="fgrid" x1="${X(v)}" y1="${Y0}" x2="${X(v)}" y2="${Y0-PH}"/>`+T(fnum(v),X(v),Y0+22,16,'f-mu f-sm');
+  for(let v=0;v<=ym+1e-9;v+=sy) o+=`<line class="fgrid" x1="${X0}" y1="${Y(v)}" x2="${X0+PW}" y2="${Y(v)}"/>`+T(fnum(v),X0-9,Y(v)+6,16,'f-mu f-sm','end');
+  o+=`<line class="fax" x1="${X0}" y1="${Y0}" x2="${X0+PW}" y2="${Y0}"/><line class="fax" x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y0-PH}"/>`;
+  const xl=X0+PW/2, yl=Y0-PH/2, yx=X0-80;
+  o+=T(m.xn,xl,Y0+48,fit(m.xn,340,21),cx)+T('independent variable',xl,Y0+67,14,cx+' f-sm');
+  o+=T(m.yn,yx,yl,fit(m.yn,250,21),cy,'middle',` transform="rotate(-90 ${yx} ${yl})"`)+T('dependent variable',yx+20,yl,14,cy+' f-sm','middle',` transform="rotate(-90 ${yx+20} ${yl})"`);
+  let ex=xm, ey=ex*m.v; if(ey>ym){ey=ym;ex=ey/m.v}
+  o+=`<line class="fline" x1="${X0}" y1="${Y0}" x2="${X(ex)}" y2="${Y(ey)}"/>`;
+  m.cols.filter(c=>!m.pts.some(q=>sameCol(q,c))&&!sameCol(c,m.ucol)).map(G).forEach(([x,y])=>{
+    o+=`<circle cx="${X(x)}" cy="${Y(y)}" r="6" class="f-gy"/>`+(X(x)-X0<80?'':T(`(${fnum(x)}, ${fnum(y)})`,X(x)-10,Y(y)-10,15,'f-gy f-sm','end'))});
+  P.forEach(([x,y],i)=>{const px=X(x),py=Y(y),right=px<X0+PW*.6;
+    o+=`<circle cx="${px}" cy="${py}" r="9.5" fill="#F76707" stroke="#fff" stroke-width="2.5"/>`;
+    o+=T(`(${fnum(x)}, ${fnum(y)})`,right?px+15:px-15,py+(i===0&&P.length>1?24:-13),20,'f-or',right?'start':'end')});
+  {const [ux2,uy2]=G(m.ucol), px=X(ux2), py=Y(uy2), on=m.pts.some(q=>sameCol(q,m.ucol));
+   const ul=m.flip?[1,m.txt]:[1,m.txt], lab=`unit rate (${ul[0]}, ${ul[1]})`, tx2=X0+PW-8, ty2=Y0-16, twd=lab.length*9.6;
+   o+=on?`<circle cx="${px}" cy="${py}" r="14" fill="none" stroke="var(--purple)" stroke-width="3.5"/>`:`<circle cx="${px}" cy="${py}" r="7.5" class="f-pu" stroke="#fff" stroke-width="2"/>`;
+   if(!(on&&P.length===1)){o+=`<line class="flead" x1="${tx2-twd-6}" y1="${ty2-6}" x2="${px+(on?13:8)}" y2="${py+(on?4:2)}"/>`+T(lab,tx2,ty2,16,'f-pu','end')}
+   else o+=T('unit rate',px-18,py+30,16,'f-pu','end');}
+  o+=`<circle cx="${X0}" cy="${Y0}" r="4.5" class="f-ik"/>`;
+  return o+'</svg>';
+}
+function renderVisual(revealed){
+  const p=st.p, v=$('visual'), F=revealed?fbFor(p):[];
+  let dia;
+  if(p.book) dia=bookDia(p,revealed);
+  else if(p.type!=='eq') dia=rowsSVG(p,revealed);
+  else if(revealed) dia=groupsSVG(p,p.k,`${p.down?'÷':'×'} ${p.k}`,!PREVIEW&&!st.fbShown);
+  else if(!p.down) dia=groupsSVG(p,1,'',false);
+  else dia=rowsSVG({type:'eq',rows:[{k:p.A,c:p.a*p.k},{k:p.B,c:p.b*p.k}],focus:[]},false);
+  const stack=!!p.book||F.length>0;
+  v.classList.toggle('book',stack);
+  if(!stack){v.innerHTML=dia;return}
+  let h=p.book?`<div class="qcard">${p.set==="quiz"||p.set==="book"?"":`<span class="qn">${p.n}</span>`}<p>${p.q}</p></div>`:'';
+  if(!F.length){ if(dia) h+=`<div class="dia">${dia}</div>`; }
+  else{
+    /* after answering: pictures on one tab, proportion + table + graph on the others */
+    st.fbShown=true;
+    const T=[];
+    if(dia) T.push({lab:p.book&&!picModel(p)?'Diagram':'Pictures',html:`<div class="dia">${dia}</div>`});
+    F.forEach(d=>T.push({lab:F.length>1?d.tab:'Proportion & graph',html:`<div class="dia fbk">${fbSVG(d)}</div>`}));
+    st.fbi=Math.min(st.fbi,T.length-1);
+    if(T.length>1) h+=`<div class="fbtabs" role="tablist" aria-label="Show">${T.map((t,i)=>`<button role="tab" data-fb="${i}" aria-pressed="${i===st.fbi}" aria-selected="${i===st.fbi}">${t.lab}</button>`).join('')}</div>`;
+    h+=T[st.fbi].html;
+  }
+  v.innerHTML=h;
+  v.querySelectorAll('[data-fb]').forEach(b=>b.addEventListener('click',()=>{st.fbi=+b.dataset.fb;renderVisual(true)}));
+}
+
+/* ---------- big proportion (plain fraction problems): find × first, then the missing term ---------- */
+const isFP=p=>!!(p&&p.type==='we'&&p.plain);
+function fpInfo(p){
+  const m=p.miss[0], r=m===2?1:0;             /* r = the row whose two numbers are both known */
+  return {m,r,k:p.vals[r+2]/p.vals[r]};
+}
+function fpHTML(p){
+  const I=fpInfo(p), v=p.vals, kBox=`<span class="mul">×${PREVIEW?`<span>${st.showAns?I.k:''}</span>`:'<input class="fpk" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Multiply by what?">'}</span>`;
+  const top2=I.m===2?(PREVIEW?`<div class="given box">${st.showAns?v[2]:''}</div>`:'<input class="fpa" inputmode="numeric" autocomplete="off" maxlength="5" aria-label="Missing number">'):v[2];
+  const bot2=I.m===3?(PREVIEW?`<div class="given box">${st.showAns?v[3]:''}</div>`:'<input class="fpa" inputmode="numeric" autocomplete="off" maxlength="5" aria-label="Missing number">'):v[3];
+  const midTop=I.r===0?kBox:'<span class="mul gap tmul">×</span>', midBot=I.r===1?kBox:'<span class="mul gap tmul">×</span>';
+  let h=`<div class="fp"><span>${v[0]}</span><div class="fb"></div><span>${v[1]}</span>`
+    +`${midTop}<span class="eqs">=</span>${midBot}`
+    +`<span>${top2}</span><div class="fb"></div><span>${bot2}</span>`;
+  (p.more||[]).forEach(([a,b])=>h+=`<span></span><span class="eqs">=</span><span></span><span>${a}</span><div class="fb"></div><span>${b}</span>`);
+  return h+'</div>';
+}
+function fpInit(){
+  const k=document.querySelector('#eqn .fpk'), a=document.querySelector('#eqn .fpa'); if(!k) return;
+  st.fpk=false; a.disabled=true;
+  const num=t=>{t.value=t.value.replace(/\D/g,'');t.classList.remove('no')};
+  k.addEventListener('input',()=>{num(k);if(k.value!==''&&+k.value===fpInfo(st.p).k)fpKOk()});
+  a.addEventListener('input',()=>{num(a);a.classList.toggle('long',a.value.length>3);if(a.value!==''&&+a.value===st.p.vals[fpInfo(st.p).m])check()});
+}
+function fpKOk(){
+  const I=fpInfo(st.p), v=st.p.vals, k=document.querySelector('#eqn .fpk'), a=document.querySelector('#eqn .fpa');
+  st.fpk=true; k.classList.add('ok'); k.disabled=true; k.closest('.mul').classList.add('done'); fpDone();
+  say('good',`✓ ${v[I.r]} × ${I.k} = ${v[I.r+2]}. Now find the missing number.`); $('showBtn').hidden=true;
+  a.disabled=false; a.focus(); requestAnimationFrame(()=>a.focus());
+}
+function fpCheck(){
+  const p=st.p, I=fpInfo(p), v=p.vals, k=document.querySelector('#eqn .fpk'), a=document.querySelector('#eqn .fpa');
+  const o=1-I.r;                                   /* the row with the missing number */
+  if(!st.fpk){
+    if(!k.value){say('info',`Fill in the box: ${v[I.r]} × what = ${v[I.r+2]}?`);k.focus();return}
+    if(+k.value===I.k){fpKOk();return}
+    record(false); k.classList.add('no'); $('showBtn').hidden=false;
+    say('bad',+k.value===v[I.r+2]-v[I.r]?`That’s how much you add. Equivalent ratios multiply: ${v[I.r]} × what = ${v[I.r+2]}?`:`${v[I.r]} × ${k.value} = ${v[I.r]*k.value}, not ${v[I.r+2]}. Try again.`);
+    k.focus(); k.select(); return;
+  }
+  if(!a.value){say('info','Fill in the missing number.');a.focus();return}
+  const n=+a.value;
+  if(n===v[I.m]){
+    record(true); a.classList.add('ok'); say('good','✓ '+p.why);
+    st.solved++; stat(s=>s.solved++); updateCount(); finish(); return;
+  }
+  record(false); a.classList.add('no'); $('showBtn').hidden=false;
+  say('bad',n===v[o]+(v[I.r+2]-v[I.r])?'Multiply, don’t add.':`Do the same to the ${o?'bottom':'top'}: ${v[o]} × ${I.k}.`);
+  a.focus(); a.select();
+}
+function fpShow(){
+  const p=st.p, I=fpInfo(p), k=document.querySelector('#eqn .fpk'), a=document.querySelector('#eqn .fpa');
+  k.value=I.k; a.value=p.vals[I.m];
+  [k,a].forEach(x=>{x.classList.remove('no','ok');x.classList.add('shown');x.disabled=true});
+  k.closest('.mul').classList.add('done');
+  stat(s=>s.shown++); say('info',p.why); finish();
+}
+function fpDone(){  /* once the multiplier is found: show the same × between the other pair too */
+  const t=document.querySelector('#eqn .fp .tmul'); if(!t) return;
+  t.classList.remove('gap'); t.classList.add('done'); t.textContent='× '+fpInfo(st.p).k;
+}
+
+/* ---------- simplest form: a right but unsimplified ratio is accepted, then simplified in new boxes ---------- */
+function simAdd(){
+  const e=$('eqn'), B=i=>box(i,'').replace('<input ','<input class="sim" ');
+  st.sim=true;
+  if(st.p.frac){
+    const fw=e.querySelector('.fracw'), w=document.createElement('div'); w.className='simpw';
+    fw.before(w); w.appendChild(fw);
+    w.insertAdjacentHTML('beforeend',`${sep('=')}<div class="fracs">${term('',B(2))}<div class="fbar3"></div>${term('',B(3))}</div>`);
+  }else e.insertAdjacentHTML('beforeend',sep('=')+term('',B(2))+sep(':')+term('',B(3)));
+  e.querySelectorAll('input.sim').forEach(i=>i.addEventListener('input',onInput));
+  fitEqn();
+}
+function simStart(x,y){
+  inputs().forEach(i=>{i.classList.add('ok');i.disabled=true});
+  simAdd(); st.simFrom=[x,y];
+  say('good','✓ Right! Now write it in simplest form.'); $('showBtn').hidden=true;
+  const f=document.querySelector('#eqn input.sim'); f.focus(); requestAnimationFrame(()=>f.focus());
+}
+function simCheck(){
+  const p=st.p, si=[...document.querySelectorAll('#eqn input.sim')], [x,y]=st.simFrom, [sa,sb]=simp(x,y);
+  const empty=si.find(i=>!i.value); if(empty){say('info','Fill in both boxes.');empty.focus();return}
+  const [u,v]=si.map(i=>+i.value);
+  si.forEach(i=>i.classList.remove('ok','no'));
+  if(u===sa&&v===sb){
+    si.forEach(i=>{i.classList.add('ok');i.disabled=true});
+    say('good','✓ '+(p.book&&p.why?p.why:`${x}:${y} = ${sa}:${sb}`));
+    st.solved++; stat(s=>s.solved++); updateCount(); finish(); return;
+  }
+  si.forEach(i=>i.classList.add('no')); $('showBtn').hidden=false;
+  const g=gcd(u,v);
+  say('bad',u*y===v*x&&u>0&&v>0?`Almost: ${u} and ${v} can both still be divided by ${g}.`:`That isn’t equal to ${x}:${y}. Divide both numbers by the same number.`);
+  si[0].focus(); si[0].select();
+}
+
+/* ---------- answer row ---------- */
+const term=(tag,content)=>`<div class="term"><div class="tag">${tag==='all'&&!st.p.book?'<span class="all">all</span>':SH[tag]?ico(tag):`<span class="word">${tag}</span>`}</div>${content}</div>`;
+const sep=c=>`<div class="sep">${c}</div>`;
+const given=v=>`<div class="given">${v}</div>`;
+function box(i,val){
+  return PREVIEW
+    ?`<div class="given box">${st.showAns?val:''}</div>`
+    :`<input data-i="${i}" inputmode="decimal" autocomplete="off" maxlength="5" aria-label="Answer box ${i+1}">`;
+}
+function fitEqn(){
+  const e=$('eqn'), W=e.parentElement, avail=W.clientWidth-16;
+  const fits0=()=>{const r=W.getBoundingClientRect(),k=[...W.children].filter(c=>!c.hidden&&c.offsetHeight);
+    return !k.length||(k[0].getBoundingClientRect().top>=r.top-1&&k[k.length-1].getBoundingClientRect().bottom<=r.bottom+1)};
+  if(st.zl){e.style.zoom=st.zl; if(fits0()&&e.scrollWidth*(+st.zl||1)<=avail+2) return;}
+  e.style.zoom='';
+  let z=1; const w=e.scrollWidth;
+  if(w>avail){z=avail/w; e.style.zoom=z.toFixed(3)}
+  /* also shrink until everything in the answer column fits top to bottom */
+  const fits=()=>{const r=W.getBoundingClientRect(),k=[...W.children].filter(c=>!c.hidden&&c.offsetHeight);
+    return !k.length||(k[0].getBoundingClientRect().top>=r.top-1&&k[k.length-1].getBoundingClientRect().bottom<=r.bottom+1)};
+  for(let i=0;i<10&&!fits();i++){z*=.92; e.style.zoom=z.toFixed(3)}
+  st.zl=document.querySelector('#eqn .rtab')?z.toFixed(3):null;
+}
+function propInfo(p){
+  const P=p.type==='eq'
+    ?{vals:[...p.first,...p.second],miss:[2+p.mi],tags:[p.A,p.B]}
+    :{vals:p.vals,miss:p.miss,tags:p.plain?['','']:(p.lab||p.tags),};
+  for(const r of [0,1]) if(!P.miss.includes(r)&&!P.miss.includes(r+2)){
+    const a=P.vals[r],b=P.vals[r+2]; P.op=b>=a?'×':'÷'; P.k=b>=a?b/a:a/b; break;
+  }
+  return P;
+}
+const arcTxt=()=>{const P=st.prop;return P&&P.op?`${P.op} ${st.kDone||st.done||(PREVIEW&&st.showAns)?+P.k.toFixed(3):'?'}`:''};
+function propHTML(P){
+  const num=v=>String(+(+v).toFixed(3));
+  const cell=(j,area)=>`<div style="grid-area:${area}">${P.miss.includes(j)?box(P.miss.indexOf(j),P.vals[j]):`<div class="pg">${num(P.vals[j])}</div>`}</div>`;
+  const lab=(t,area)=>`<div class="pl" style="grid-area:${area}">${!t?'':SH[t]?ico(t):t==='$'?'dollars':t}</div>`;
+  const arc=(top,area)=>!P.op?`<div style="grid-area:${area}"></div>`:`<div style="grid-area:${area}"><svg class="parc" viewBox="0 0 316 62" aria-hidden="true">
+    <defs><marker id="pah${top?1:2}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10z" fill="var(--red)"/></marker></defs>
+    ${top?`<path class="ln" d="M70,58 Q158,22 248,56" marker-end="url(#pah1)"/><text class="ak" x="158" y="24" text-anchor="middle">${arcTxt()}</text>`
+         :`<path class="ln" d="M70,4 Q158,40 248,6" marker-end="url(#pah2)"/><text class="ak" x="158" y="58" text-anchor="middle">${arcTxt()}</text>`}</svg></div>`;
+  return `<div class="prop">
+    <div class="ph" style="grid-area:h1">Original</div><div class="ph" style="grid-area:h2">New</div>
+    ${arc(true,'at')}
+    ${lab(P.tags[0],'l1')}${cell(0,'a')}<div class="peq" style="grid-area:eq">=</div>${cell(2,'c')}
+    <div class="pbar" style="grid-area:b1"></div><div class="pbar" style="grid-area:b2"></div>
+    ${lab(P.tags[1],'l2')}${cell(1,'bb')}${cell(3,'d')}
+    ${arc(false,'ab')}</div>`;
+}
+/* equivalent ratios as a table: original ratio | multiply (or divide) by | new ratio */
+
+/* ---------- step by step: original ratio → new ratio column → multiplier → answers ---------- */
+const rhead=(p,op)=>`<div class="rh c1"></div><div class="rh c2"><span>${p.origLab?`<b>${p.origLab}</b><small>original ratio</small>`:'Original ratio'}</span></div><div class="rh c3"><span></span></div><div class="rh c4"><span>${p.newLab?`<b>${p.newLab}</b><small>new ratio</small>`:'New ratio'}</span></div>`;
+function stepUI(){
+  const t=document.querySelector('#eqn .rtab'); if(!t||PREVIEW) return;
+  t.classList.remove('s1','s2','s3'); if(st.step<4) t.classList.add('s'+st.step);
+  const g=st.g, p=st.p;
+  $('checkBtn').textContent=st.step<3?'Next step ›':'Check';
+  if(st.step===1) say('info','Step 1: Start with the original ratio.');
+  else if(st.step===2) say('info',p.newLab&&p.newLab.startsWith(fnum(g.b)+' ')?`Step 2: The new ratio is for ${p.newLab}.`:`Step 2: ${p.newLab||'The new ratio'} has ${fnum(g.b)} ${g.lab}.`);
+  else if(st.step===3) say('info',`Step 3: Find the ${g.op==='÷'?'division':'multiplication'} relationship. ${fnum(g.a)} ${g.op} ? = ${fnum(g.b)}`);
+  focusFirst(); fitEqn();
+}
+function advStep(){
+  st.step++;
+  const t=document.querySelector('#eqn .rtab');
+  if(t){t.classList.remove('anim3','anim4');t.classList.add(st.step===2?'anim4':'anim3')}
+  stepUI();
+}
+function ratioTable(P){
+  const num=v=>String(+(+v).toFixed(3)), op=P.op||'×', g=st.g;
+  const L=P.tags.map((t,i)=>!t?(i?'bottom number':'top number'):SH[t]?ico(t):t==='$'?'dollars':t);
+  const cell=j=>P.miss.includes(j)?box(P.miss.indexOf(j),P.vals[j]):given(num(P.vals[j]));
+  const kc=r=>g&&!PREVIEW&&g.pos===r?KIN:`<span class="kq">${PREVIEW&&st.showAns&&P.k?num(P.k):'?'}</span>`;
+  return `<div class="rtab">${rhead(st.p,op)}`
+    +[0,1].map(r=>{const gv=P.miss.includes(r)||P.miss.includes(r+2)?'':' gv';
+      return `<div class="rc rl${gv}">${L[r]}</div><div class="rc c2${gv}">${cell(r)}</div><div class="rc c3 rm${gv}"><span class="x">${op}</span>${kc(r)}</div><div class="rc c4${gv}">${cell(r+2)}</div>`}).join('')+'</div>';
+}
+const updArc=()=>document.querySelectorAll('#eqn .ak').forEach(t=>t.textContent=arcTxt());
+const hidesTags=p=>p.type==='p2p'||p.type==='p2w'||p.type==='wr';
+function showTags(){$('eqn').classList.toggle('hidetags',hidesTags(st.p)&&!st.done&&!(PREVIEW&&st.showAns))}
+function renderWork(){
+  const p=st.p, e=$('eqn');
+  st.g=isFP(p)?null:gInfo(p); st.kDone=false; st.prop=null; st.zl=null;
+  st.step=st.g&&st.g.inline&&!PREVIEW&&['rt','we','eq'].includes(p.type)?1:4;
+  document.querySelector('.stage').classList.toggle('solo',isFP(p));
+  $('prompt').textContent=isFP(p)?p.q:p.book?'':(p.prompt||'');
+  $('prompt').hidden=!$('prompt').textContent;
+  e.classList.toggle('stack',p.type==='pick');
+  if(p.type==='pick'){
+    const sel=PREVIEW&&st.showAns;
+    e.innerHTML=`<div class="given">${p.shown}</div><div class="choices">${p.choices.map((c,i)=>`<button class="choice${sel&&i===p.ans?' ok':''}" data-c="${i}"${PREVIEW?' disabled':''}>${c}</button>`).join('')}</div>`;
+    if(!PREVIEW) e.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>pick(+b.dataset.c)));
+  }else if(isFP(p)){
+    e.innerHTML=fpHTML(p);
+  }else if(p.type==='we'||p.type==='eq'){
+    st.prop=propInfo(p); e.innerHTML=ratioTable(st.prop);
+  }else if(p.type==='tape'){
+    st.ts=0;
+    e.innerHTML=p.steps.map((x,i)=>`<div class="tline${i?' later':''}"><span class="gn">${i+1}</span><span${i===p.steps.length-1?' class="tpre"':''}>${x.pre}</span>${box(i,x.ans)}<span class="tp">${x.post}</span></div>`).join('');
+    e.querySelectorAll('input').forEach((x,i)=>{if(i)x.disabled=true});
+  }else if(p.type==='rt'){
+    let bi=0;
+    const kc=r=>!r.m&&st.g&&!PREVIEW?KIN:`<span class="kq">${PREVIEW&&st.showAns?p.k:'?'}</span>`;
+    e.innerHTML=`<div class="rtab">${rhead(p,'×')}`
+      +p.rows.map(r=>{const gv=r.m?'':' gv';return `<div class="rc rl${gv}">${r.l}</div><div class="rc c2${gv}">${given(r.as||r.a)}</div><div class="rc c3 rm${gv}"><span class="x">×</span>${kc(r)}</div><div class="rc c4${gv}">${r.m?box(bi++,r.b):given(r.b)}</div>`}).join('')+'</div>';
+  }else{
+    const v=p.ans;
+    e.innerHTML=p.frac
+      ?`<div class="fracw">${term(p.tags[0],box(0,v[0]))}<div class="fbar2"></div>${term(p.tags[1],box(1,v[1]))}</div>`
+      :term(p.tags[0],box(0,v[0]))+sep(':')+term(p.tags[1],box(1,v[1]));
+  }
+  e.classList.toggle('tape',p.type==='tape');
+  const tb=!isFP(p)&&(p.type==='rt'||p.type==='we'||p.type==='eq');
+  e.classList.toggle('rt',tb);
+  e.parentElement.classList.toggle('tbl',tb);
+  e.classList.toggle('wide',tb&&(p.type==='eq'||p.type==='we'));
+  showTags(); fitEqn();
+  if(isFP(p)) fpInit(); else inputs().forEach(i=>i.addEventListener('input',onInput));
+  if(st.g&&!PREVIEW) inputs().forEach(i=>{i.disabled=true;i.classList.add('lock')});
+  rowsInit();
+  renderGuide();
+}
+/* ---------- guided steps for equivalent ratios: 1. find the multiplier, 2. use it ---------- */
+const KIN='<input class="kin" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="What number?">';
+function gInfo(p){
+  if(!st.guide) return null;
+  if(p.type==='rt'){const g=p.rows.find(r=>!r.m);return {a:g.a,b:g.b,k:p.k,op:'×',inline:true,lab:g.l,okmsg:`Use × ${p.k} in every row.`}}
+  let c,miss,tags;
+  if(p.type==='eq'){c=[...p.first,...p.second];miss=[2+p.mi];tags=[p.A,p.B]}
+  else if(p.type==='we'){c=p.vals;miss=p.miss;tags=p.tags}
+  else return null;
+  const pos=[0,1].find(i=>!miss.includes(i)&&!miss.includes(i+2));
+  if(pos===undefined) return null;
+  const a=c[pos],b=c[pos+2],down=b<a,k=down?a/b:b/a,op=down?'÷':'×',inv=down?'×':'÷';
+  if(!isInt(k)||k===1) return null;
+  const g={a,b,k,op,t1:tags[pos],pos,inline:true,okmsg:(p.hint?p.hint+' ':'')+`Use ${op} ${k} in every row.`};
+  g.lab=p.type==='eq'?NAMES[tags[pos]]:(()=>{const t=(p.plain?['','']:(p.lab||p.tags))[pos];return !t?(pos?'bottom number':'top number'):t==='$'?'dollars':t})();
+  if(miss.length===1){
+    const m=miss[0], fwd=m>=2;
+    Object.assign(g,{t2:tags[m%2],expr:fwd?`${c[m-2]} ${op} ${k}`:`${c[m+2]} ${inv} ${k}`,ans:c[m],
+      cap2:fwd?'Do the same to the other number.':'Go backward to undo it.'});
+  }else Object.assign(g,{txt:(p.hint?p.hint+' ':'')+`Then use ${op} ${k}.`,cap2:'Fill in the boxes.'});
+  return g;
+}
+function renderGuide(){
+  const g=st.g, el=$('guide');
+  if(!g||g.inline){el.innerHTML='';wireK();return}
+  const d1=st.kDone||st.done, show=PREVIEW?st.showAns:d1;
+  const l=t=>t?`<span class="gl">${SH[t]?ico(t):t}</span>`:'';
+  let h=`<div class="gstep${d1||PREVIEW?'':' now'}"><span class="gn">1</span><div><span class="gcap">What number?</span><div class="gx">${l(g.t1)}<span>${g.a} ${g.op}</span>${PREVIEW||d1?`<span class="gk">${show?g.k:'?'}</span>`:KIN}<span>= ${g.b}</span></div></div></div>`;
+  if(d1||PREVIEW) h+=`<div class="gstep${st.done||PREVIEW?'':' now'}"><span class="gn">2</span><div><span class="gcap">${g.cap2}</span>${g.txt
+    ?`<div class="gx txt">${g.txt}</div>`
+    :`<div class="gx">${l(g.t2)}<span>${g.expr} =</span><span class="${st.done?'ga':'gk'}">${st.done||(PREVIEW&&st.showAns)?g.ans:'?'}</span></div>`}</div></div>`;
+  el.innerHTML=h; wireK(); fitEqn();
+}
+function wireK(){
+  const k=document.querySelector('.kin'); if(!k) return;
+  k.addEventListener('input',()=>{k.value=k.value.replace(/\D/g,'');k.classList.remove('no');if(k.value!==''&&+k.value===st.g.k) acceptK()});
+}
+function swapK(){const k=document.querySelector('#eqn .kin');if(k)k.outerHTML=`<span class="kq">${st.g.k}</span>`}
+
+/* ---------- answers one row at a time: after the multiplier, reveal each row in turn ---------- */
+function rowsInit(){
+  st.rw=null;
+  const t=document.querySelector('#eqn .rtab'); if(!t) return;
+  [...t.querySelectorAll('.rc')].forEach((c,i)=>c.dataset.r=Math.floor(i/4));
+  if(!st.g||PREVIEW) return;
+  const ins=inputs(), T=targets(st.p)[0], rows=[];
+  ins.forEach((el,i)=>{const r=+el.closest('.rc').dataset.r;let o=rows.find(x=>x.r===r);if(!o)rows.push(o={r,els:[],t:[]});o.els.push(el);o.t.push(T[i])});
+  if(!rows.length) return;
+  rows.forEach(o=>t.querySelectorAll(`.rc[data-r="${o.r}"]`).forEach(c=>{if(c.classList.contains('c3')||(c.classList.contains('c4')&&c.querySelector('input')))c.classList.add('later')}));
+  rows.forEach(o=>{
+    const q=t.querySelector(`.rc.c3[data-r="${o.r}"] .kq`); if(!q) {o.kDone=true;return}
+    q.outerHTML='<input class="kmul" inputmode="decimal" autocomplete="off" maxlength="5" aria-label="Multiply by">';
+    o.k=t.querySelector(`.rc.c3[data-r="${o.r}"] .kmul`); o.kDone=false; o.k.disabled=true;
+    o.k.addEventListener('input',()=>{o.k.value=o.k.value.replace(/[^\d.]/g,'');o.k.classList.remove('no');if(o.k.value!==''&&+o.k.value===st.g.k)rowK(o)});
+  });
+  st.rw={rows,ai:0};
+}
+function rowK(o){
+  const g=st.g; o.kDone=true;
+  o.k.outerHTML=`<span class="kq">${fnum(g.k)}</span>`;
+  o.els.forEach(el=>{el.disabled=false;el.classList.remove('lock')});
+  say('good',`✓ Same ${g.op==='×'?'multiplier':'divisor'}: ${g.op} ${fnum(g.k)}. Now fill in ${rowName(o.r)}.`);
+  $('showBtn').hidden=true; o.els[0].focus(); requestAnimationFrame(()=>o.els[0].focus());
+}
+function rowCell(r,cls){const c=document.querySelector(`#eqn .rtab .rc.${cls}[data-r="${r}"]`);if(!c)return '';const i=c.querySelector('input:not(.kin)');return i?i.value:c.textContent.trim()}
+function rowName(r){const c=document.querySelector(`#eqn .rtab .rc.rl[data-r="${r}"]`);if(!c)return 'the next row';const s=c.querySelector('svg');return c.textContent.trim()||(s&&s.getAttribute('aria-label'))||'the next row'}
+function rowGo(i,pre){
+  const R=st.rw,o=R.rows[i],t=document.querySelector('#eqn .rtab'); R.ai=i;
+  t.querySelectorAll('.rc.now').forEach(c=>c.classList.remove('now'));
+  t.querySelectorAll(`.rc[data-r="${o.r}"]`).forEach(c=>{c.classList.add('now');if(c.classList.contains('later')){c.classList.remove('later');c.classList.add('appear')}});
+  const f=o.kDone?o.els[0]:o.k;
+  if(o.kDone) o.els.forEach(el=>{el.disabled=false;el.classList.remove('lock')}); else o.k.disabled=false;
+  say('good',(pre?pre+' ':'')+(o.kDone?`Now ${rowName(o.r)}.`:`Now ${rowName(o.r)}: what do you ${st.g.op==='×'?'multiply':'divide'} by?`));
+  $('showBtn').hidden=true; f.focus(); requestAnimationFrame(()=>f.focus());
+}
+function rowEq(o){
+  const g=st.g, a=rowCell(o.r,'c2'), b=rowCell(o.r,'c4'), A=/[+]/.test(a)?`(${a})`:a;
+  return o.els[0].closest('.c2')&&o.els.length===1?`${b} ${g.op==='×'?'÷':'×'} ${g.k} = ${a}`:`${A} ${g.op} ${g.k} = ${b}`;
+}
+function rowOk(){
+  const R=st.rw,o=R.rows[R.ai];
+  o.els.forEach(i=>{i.classList.remove('no');i.classList.add('ok');i.disabled=true});
+  const msg='✓ '+rowEq(o)+'.';
+  if(R.ai+1<R.rows.length) rowGo(R.ai+1,msg);
+  else check();
+}
+const rowsAllOk=()=>st.rw.rows.every(o=>o.els.every((el,j)=>el.value!==''&&+el.value===o.t[j]));
+function rowInput(t){
+  const o=st.rw.rows[st.rw.ai]; if(!o.els.includes(t)) return;
+  o.els.forEach(i=>i.classList.remove('ok','no'));
+  const v=o.els.map(i=>i.value===''?null:+i.value);
+  if(v.every((x,j)=>x===o.t[j])){rowOk();return}
+  const i=o.els.indexOf(t), nx=o.els.slice(i+1).find(x=>!x.value);
+  const longer=String(o.t[i]).length>t.value.length&&String(o.t[i]).startsWith(t.value);
+  if(nx&&!longer&&v[i]===o.t[i]) nx.focus();
+}
+function rowCheck(){
+  const R=st.rw,o=R.rows[R.ai],g=st.g,ins=inputs();
+  if(!o.kDone){
+    if(!o.k.value){say('info',`What do you ${g.op==='×'?'multiply':'divide'} by? Use the same number as the first row.`);o.k.focus();return}
+    if(+o.k.value===g.k){rowK(o);return}
+    record(false); o.k.classList.add('no');
+    say('bad',`It’s the same in every row. Look at the first row: ${fnum(g.a)} ${g.op} ? = ${fnum(g.b)}`);
+    $('showBtn').hidden=false; o.k.focus(); o.k.select(); return;
+  }
+  const empty=o.els.find(i=>!i.value); if(empty){say('info',o.els.length>1?'Fill in both boxes.':'Fill in the box.');empty.focus();return}
+  const v=o.els.map(i=>+i.value);
+  if(v.every((x,j)=>x===o.t[j])){rowOk();return}
+  record(false);
+  o.els.forEach((el,j)=>el.classList.add(v[j]===o.t[j]?'ok':'no'));
+  let msg=null;
+  for(const w of st.p.wrong||[]) if(typeof w[0]==='number'&&o.els.includes(ins[w[0]])&&+ins[w[0]].value===w[1]) msg=w[2];
+  const a=rowCell(o.r,'c2'), b=rowCell(o.r,'c4');
+  if(!msg&&st.p.hint&&o.els.length>1) msg=st.p.hint;
+  if(!msg&&a!==''&&isFinite(+a)&&o.els[0].closest('.c4')&&Math.abs(v[0]-(+a+(g.b-g.a)))<1e-9) msg=g.op==='×'?'Multiply. Don’t add.':'Divide. Don’t subtract.';
+  if(!msg) msg=o.els[0].closest('.c2')&&o.els.length===1?`Go backward: ${b} ${g.op==='×'?'÷':'×'} ${g.k} = ?`:`Try again: ${/[+]/.test(a)?'('+a+')':a} ${g.op} ${g.k} = ?`;
+  say('bad',msg); $('showBtn').hidden=false;
+  const bad=o.els.find(e=>e.classList.contains('no'))||o.els[0]; bad.focus(); bad.select();
+}
+function acceptK(){
+  const g=st.g; st.kDone=true; st.step=4; $('checkBtn').textContent='Check'; updArc();
+  if(g.inline){swapK();document.querySelectorAll('#eqn .kq').forEach(q=>q.textContent=g.k)}
+  else renderGuide();
+  if(st.rw){rowGo(0,`✓ ${g.a} ${g.op} ${g.k} = ${g.b}.`);return}
+  inputs().forEach(i=>{i.disabled=false;i.classList.remove('lock')});
+  say('good',`✓ ${g.a} ${g.op} ${g.k} = ${g.b}`+(g.okmsg?'. '+g.okmsg:''));
+  $('showBtn').hidden=true; focusFirst();
+}
+function checkK(){
+  const g=st.g, el=document.querySelector('.kin'); if(!el) return;
+  const big=Math.max(g.a,g.b), small=Math.min(g.a,g.b);
+  if(!el.value){say('info',`${g.a} ${g.op==='×'?'times':'divided by'} what number = ${g.b}?`);el.focus();return}
+  if(+el.value===g.k){acceptK();return}
+  record(false); el.classList.add('no');
+  say('bad',(+el.value===big-small?(g.op==='×'?'Multiply. Don’t add. ':'Divide. Don’t subtract. '):'')+`Think: ${big} ÷ ${small} = ?`);
+  $('showBtn').hidden=false; el.focus(); el.select();
+}
+function explain(p){
+  if(p.why) return p.why;
+  if(p.type==='eq'){const o=1-p.mi,op=p.down?'÷':'×';return `${p.first[o]} ${op} ${p.k} = ${p.second[o]}, so ${p.first[p.mi]} ${op} ${p.k} = ${p.ans}`}
+  const [sa,sb]=simp(...p.ans);
+  return gcd(...p.ans)>1?`${p.ans[0]}:${p.ans[1]} = ${sa}:${sb}`:'';
+}
+function say(cls,msg){const f=$('feedback');f.className='feedback'+(cls?' '+cls:'');f.textContent=msg;fitEqn()}
+
+/* ---------- teacher stats (hidden; Shift+T) ---------- */
+const SKEY='ratioDrillStats';
+const blank=()=>({tried:0,first:0,checks:0,solved:0,shown:0,skipped:0,best:0,by:{p2p:[0,0],p2w:[0,0],eq:[0,0],book:[0,0],quiz:[0,0],mean:[0,0],tape:[0,0]}});
+function loadStats(){try{const s=JSON.parse(localStorage.getItem(SKEY));if(s&&s.by){const b=Object.assign(blank(),s);b.by=Object.assign(blank().by,s.by);return b}}catch(e){}return blank()}
+let allStats=loadStats(); const sess=blank();
+function stat(fn){fn(sess);fn(allStats);try{localStorage.setItem(SKEY,JSON.stringify(allStats))}catch(e){}}
+function renderStats(){
+  const pct=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+  const rows=[
+    ['Problems tried',s=>s.tried],['Right on first try',s=>s.first],['First-try accuracy',s=>pct(s.first,s.tried)],
+    ['Solved',s=>s.solved],['Answer shown',s=>s.shown],['Skipped',s=>s.skipped],['Total checks',s=>s.checks],
+    ['Best streak',s=>s.best],
+    ['P:P accuracy',s=>pct(s.by.p2p[1],s.by.p2p[0])],['P:W accuracy',s=>pct(s.by.p2w[1],s.by.p2w[0])],['Understanding Ratios accuracy',s=>pct(s.by.quiz[1],s.by.quiz[0])],['Tape accuracy',s=>pct((s.by.tape||[0,0])[1],(s.by.tape||[0,0])[0])]
+  ];
+  $('statsTable').innerHTML=`<table><tr><th></th><th>This session</th><th>Saved</th></tr>${rows.map(([n,f])=>`<tr><td>${n}</td><td>${f(sess)}</td><td>${f(allStats)}</td></tr>`).join('')}</table>`;
+}
+function openTeacher(){renderStats();$('teacher').showModal()}
+$('closeStats').addEventListener('click',()=>{$('teacher').close()});
+$('teacher').addEventListener('close',()=>{if(!st.done)focusFirst()});
+$('resetStats').addEventListener('click',()=>{allStats=blank();try{localStorage.removeItem(SKEY)}catch(e){}renderStats()});
+
+/* ---------- student flow ---------- */
+function targets(p){
+  if(p.type==='eq') return [[p.ans]];
+  if(p.type==='we') return [p.miss.map(j=>p.vals[j])];
+  if(p.type==='rt') return [p.rows.filter(r=>r.m).map(r=>r.b)];
+  if(p.type==='tape') return [p.steps.map(x=>x.ans)];
+  return [p.ans,simp(...p.ans)];
+}
+function onInput(e){
+  const t=e.target; t.value=t.value.replace(/[^\d.]/g,'');
+  t.classList.toggle('long',t.value.length>3);
+  if(st.rw&&!st.done){rowInput(t);return}
+  if(st.p.type==='tape'&&!st.done){tapeInput(t);return}
+  if(st.sim&&!st.done){
+    t.classList.remove('ok','no');
+    const si=[...document.querySelectorAll('#eqn input.sim')], [sa,sb]=simp(...st.simFrom), j=si.indexOf(t);
+    if(si.every(i=>i.value!=='')&&+si[0].value===sa&&+si[1].value===sb){check();return}
+    if(j===0&&+t.value===sa&&!si[1].value) si[1].focus();
+    return;
+  }
+  inputs().forEach(i=>i.classList.remove('ok','no'));
+  if(st.done) return;
+  const ins=inputs(), vals=ins.map(i=>i.value===''?null:+i.value), i=ins.indexOf(t), T=targets(st.p);
+  if(vals.every(v=>v!==null)&&T.some(tg=>tg.every((x,j)=>x===vals[j]))){check();return}
+  const nx=ins.slice(i+1).find(x=>!x.value);
+  /* move on only when no longer answer could still be coming (typing 3 of 33 must not jump) */
+  const typed=t.value, longer=T.some(tg=>String(tg[i]).length>typed.length&&String(tg[i]).startsWith(typed));
+  if(nx&&!longer&&T.some(tg=>tg[i]===vals[i])) nx.focus();
+}
+function judgeRatio(p,x,y){
+  const [a,b]=p.ans,[sa,sb]=simp(a,b);
+  if(x*b===y*a){
+    const g=gcd(x,y);
+    if(p.book&&p.why) return {res:'good',msg:'✓ '+p.why};
+    return {res:'good',msg:'✓ Correct'+(gcd(a,b)>1&&!(x===sa&&y===sb)?`. Simplest form: ${sa}:${sb}`:'')};
+  }
+  for(const [[wa,wb],msg] of p.wrong||[]) if(x*wb===y*wa) return {res:'bad',msg};
+  if(x*a===y*b) return {res:'bad',msg:'Check the order.'};
+  const kind=p.kind||p.type;
+  if(kind==='p2w'){const o=p.total-p.part;if((x===p.part&&y===o)||(x===o&&y===p.part))return {res:'bad',msg:'The whole is all the shapes.'}}
+  if(kind==='p2p'&&(x===p.total||y===p.total)) return {res:'bad',msg:'Use only the two groups.'};
+  return {res:'bad',msg:'Try again.'};
+}
+function judgeEq(p,n){
+  if(n===p.ans) return {res:'good',msg:'✓ '+explain(p)};
+  const o=1-p.mi;
+  if(n===p.first[p.mi]+(p.second[o]-p.first[o])) return {res:'bad',msg:'Multiply or divide. Don\u2019t add.'};
+  return {res:'bad',msg:'Try again.'};
+}
+function judgeWe(p,n){
+  const T=p.miss.map(j=>p.vals[j]);
+  if(n.every((x,i)=>x===T[i])) return {res:'good',msg:'✓ '+p.why};
+  for(const [bi,v,msg] of p.wrong||[]) if(n[bi]===v) return {res:'bad',msg};
+  if(p.miss.length===1&&p.miss[0]>=2){
+    const m=p.miss[0], o=m===2?3:2;
+    if(n[0]===p.vals[m-2]+(p.vals[o]-p.vals[o-2])) return {res:'bad',msg:'Multiply or divide. Don\u2019t add.'};
+  }
+  if(p.hint&&n[0]!==T[0]) return {res:'bad',msg:p.hint};
+  return {res:'bad',msg:'Try again.'};
+}
+function judgeRt(p,n){
+  const M=p.rows.filter(r=>r.m), ok=n.map((x,i)=>x===M[i].b), g=p.rows.find(r=>!r.m);
+  if(ok.every(Boolean)) return {res:'good',msg:'✓ '+p.why,ok};
+  for(const [bi,v,msg] of p.wrong||[]) if(n[bi]===v) return {res:'bad',msg,ok};
+  if(M.some((r,i)=>!ok[i]&&n[i]===r.a+(g.b-g.a))) return {res:'bad',msg:'Multiply. Don\u2019t add.',ok};
+  return {res:'bad',msg:ok.some(Boolean)?'Check the red box.':`${g.a} times what number = ${g.b}? Use that same number in every row.`,ok};
+}
+const statKey=p=>p.set||p.type;
+function record(ok){
+  stat(s=>s.checks++);
+  if(!st.attempted){
+    st.attempted=true;
+    st.streak=ok?st.streak+1:0;
+    const k=statKey(st.p);
+    stat(s=>{s.tried++;s.by[k]=s.by[k]||[0,0];s.by[k][0]++;if(ok){s.first++;s.by[k][1]++}s.best=Math.max(s.best,st.streak)});
+  }
+}
+function pick(i){
+  if(PREVIEW||st.done) return;
+  const p=st.p, ok=i===p.ans, bs=[...document.querySelectorAll('#eqn .choice')];
+  bs.forEach(b=>b.classList.remove('ok','no'));
+  bs[i].classList.add(ok?'ok':'no');
+  record(ok);
+  if(ok){say('good','✓ '+p.why);st.solved++;stat(s=>s.solved++);updateCount();finish()}
+  else{say('bad',(p.nopes&&p.nopes[i])||p.nope);$('showBtn').hidden=false}
+}
+function check(){
+  if(PREVIEW||st.done) return;
+  if(isFP(st.p)){fpCheck();return}
+  if(st.sim){simCheck();return}
+  if(st.step<3){advStep();return}
+  if(st.g&&!st.kDone){checkK();return}
+  if(st.rw&&!rowsAllOk()){rowCheck();return}
+  if(st.p.type==='tape'&&st.ts<st.p.steps.length){tapeCheck();return}
+  const p=st.p, ins=inputs(), empty=ins.find(i=>!i.value);
+  if(p.type==='pick'){say('info','Tap an answer.');focusFirst();return}
+  if(empty){say('info',ins.length>1?'Fill in both boxes.':'Fill in the box.');empty.focus();return}
+  const n=ins.map(i=>+i.value);
+  if(p.type!=='eq'&&n.some(x=>x===0)){say('info','Use numbers bigger than 0.');ins[0].focus();return}
+  const r=p.type==='tape'?{res:'good',msg:'✓ '+p.why}:p.type==='eq'?judgeEq(p,n[0]):p.type==='we'?judgeWe(p,n):p.type==='rt'?judgeRt(p,n):judgeRatio(p,n[0],n[1]);
+  if(r.res==='info'){say('info',r.msg);ins[0].focus();ins[0].select();return}
+  const ok=r.res==='good';
+  record(ok);
+  if(ok&&n.length===2&&!['eq','we','rt','tape'].includes(p.type)&&gcd(n[0],n[1])>1){simStart(n[0],n[1]);return}
+  say(r.res,r.msg);
+  if(ok){
+    ins.forEach(i=>i.classList.add('ok'));
+    st.solved++; stat(s=>s.solved++); updateCount(); finish();
+  }else{
+    ins.forEach((i,j)=>i.classList.add(r.ok&&r.ok[j]?'ok':'no'));
+    const bad=ins.find(i=>i.classList.contains('no'))||ins[0];
+    $('showBtn').hidden=false; bad.focus(); bad.select();
+  }
+}
+function showAnswer(){
+  if(isFP(st.p)){fpShow();return}
+  const p=st.p, ins=inputs();
+  st.kDone=true; updArc(); ins.forEach(i=>i.classList.remove('lock'));
+  if(p.type==='pick'){
+    document.querySelectorAll('#eqn .choice').forEach((b,i)=>{b.classList.remove('no');if(i===p.ans)b.classList.add('shown')});
+  }else if(p.type==='eq') ins[0].value=p.ans;
+  else if(p.type==='we'||p.type==='rt') targets(p)[0].forEach((v,j)=>ins[j].value=v);
+  else if(p.type==='tape') p.steps.forEach((x,j)=>ins[j].value=x.ans);
+  else {ins[0].value=p.ans[0];ins[1].value=p.ans[1];
+    if(gcd(...p.ans)>1){if(!st.sim)simAdd();const sv=simp(...p.ans),si=document.querySelectorAll('#eqn input.sim');si[0].value=sv[0];si[1].value=sv[1]}
+    ins.length=0;ins.push(...inputs())}
+  ins.forEach(i=>{i.classList.remove('no','ok');i.classList.add('shown');i.classList.toggle('long',i.value.length>3)});
+  stat(s=>s.shown++); say('info',explain(p)); finish();
+}
+function finish(){
+  document.querySelectorAll('#eqn .tline.later').forEach(l=>l.classList.remove('later'));
+  document.querySelectorAll('#eqn .tline').forEach(l=>l.classList.add('solved'));
+  st.step=4; {const t=document.querySelector('#eqn .rtab'); if(t){t.classList.remove('s1','s2','s3');t.querySelectorAll('.later,.now').forEach(c=>c.classList.remove('later','now'));t.querySelectorAll('input.kmul').forEach(i=>i.outerHTML='<span class="kq"></span>')}}
+  st.rw=null;
+  st.done=true; renderVisual(true); showTags(); if(isFP(st.p)) fpDone();
+  if(st.g){swapK();renderGuide()}
+  updArc();
+  document.querySelectorAll('#eqn .kq').forEach(k=>k.textContent=st.prop&&st.prop.k?+st.prop.k.toFixed(3):st.p.k);
+  document.querySelectorAll('#eqn input,#eqn .choice').forEach(i=>i.disabled=true);
+  $('checkBtn').hidden=true; $('showBtn').hidden=true; $('nextBtn').hidden=false;
+  $('nextBtn').focus();
+}
+function focusFirst(){if(st.rw&&!st.done){const o=st.rw.rows[st.rw.ai];if(o&&!o.kDone&&o.k&&!o.k.disabled){o.k.focus();return}}if(st.step<3&&!st.done&&!PREVIEW&&$('checkBtn')){$('checkBtn').focus();return}const f=document.querySelector('.kin,#eqn input:not(:disabled),#eqn .choice');if(f){f.focus();requestAnimationFrame(()=>f.focus())}}
+function updateCount(){
+  $('count').innerHTML=PREVIEW?`#<b>${st.idx+1}</b>`:`Solved<b>${st.solved}</b> / ${GOAL}`;
+  if(!PREVIEW&&st.solved>=GOAL&&!TI.auto){TI.auto=true;setTimeout(openTurnIn,1200)}   /* 30 solved: turn in shows up */
+}
+
+/* ---------- turning it in (Google Form) ----------
+   The same Google Form as the other drills: student code, number solved, drill name.
+   Students can turn in early, any time, as many times as they want; each time sends what's solved so far. */
+const GOAL=30;
+const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLScLjdoG75r1XORoNx4v6u-1TEzXcuQoJqQIvbbEmD_QlFFzmA/formResponse';
+const DRILL_NAME='Ratios';
+const CODE_KEY='ratios-student-code';
+const TI={code:'',sent:null,pending:null,sending:false,note:'',open:false,auto:false};
+try{TI.code=localStorage.getItem(CODE_KEY)||''}catch(e){}
+function saveCode(){try{localStorage.setItem(CODE_KEY,TI.code)}catch(e){}}
+const escH=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function openTurnIn(){if(TI.open)return;TI.open=true;TI.note='';$('turnBtn').textContent='Back to the problems';renderTurnIn()}
+function closeTurnIn(){TI.open=false;const m=$('tiModal');if(m)m.remove();$('turnBtn').textContent='Turn in';if(!st.done)focusFirst();else $('nextBtn').focus()}
+function renderTurnIn(){
+  let m=$('tiModal');
+  if(!m){m=document.createElement('div');m.id='tiModal';m.className='ti-modal';document.body.appendChild(m)}
+  const n=st.solved, text=DRILL_NAME+': '+n, more=TI.sent!==null&&TI.sent!==text, showForm=TI.sent===null||more;
+  const chips=Array.from({length:GOAL},(_,i)=>`<span class="ti-q${i<n?' done':''}">${i+1}</span>`).join('');
+  m.innerHTML=`<section class="ti-card" role="dialog" aria-modal="true" aria-labelledby="ti-title">
+    <h2 id="ti-title">Turn in</h2>
+    <p class="ti-sub">You’ve solved <b>${n}</b> of ${GOAL} problems.${n>GOAL?' Nice work going past '+GOAL+'!':''}</p>
+    <div class="ti-grid">${chips}</div>
+    <div class="ti-legend"><span><span class="ti-q done">&#10003;</span>solved</span><span><span class="ti-q"></span>not yet</span></div>
+    <iframe name="ti_frame" id="ti_frame" title="Sending" style="display:none"></iframe>
+    <form id="tiForm" action="${FORM_URL}" method="POST" target="ti_frame"${showForm?'':' hidden'}>
+      <div class="ti-warn">Type your <b>student code</b> carefully. Double-check it before you submit.</div>
+      <label for="tiCode">Student code</label>
+      <input type="text" id="tiCode" placeholder="Your code" autocomplete="off" autocapitalize="characters" spellcheck="false" required value="${escH(TI.code)}">
+      <input type="hidden" id="tiFCode" name="entry.1999309314" value="">
+      <input type="hidden" id="tiFScore" name="entry.1276394101" value="">
+      <input type="hidden" id="tiFDrill" name="entry.582215829" value="">
+      <button type="submit" class="btn primary" id="tiSubmit">${more?'Send updated results':'Submit results'}</button>
+    </form>
+    <p class="ti-feedback" id="tiFeedback">${TI.note||(more?'You turned in before. Send again to update your results.':'')}</p>
+    <div><button type="button" class="btn" id="tiBack">Back to the problems</button></div>
+  </section>`;
+  $('tiCode').addEventListener('input',e=>{const el=e.target,v=el.value.replace(/\s+/g,'');if(v!==el.value)el.value=v;TI.code=v;saveCode()});
+  $('ti_frame').addEventListener('load',()=>{
+    if(!TI.sending)return;
+    TI.sending=false;TI.sent=TI.pending;
+    TI.note='<span class="ok">Submitted. Your teacher has your results.</span>';
+    renderTurnIn();
+  });
+  $('tiForm').addEventListener('submit',()=>{
+    const code=$('tiCode').value.trim().toUpperCase();
+    $('tiFCode').value=code;$('tiFScore').value=String(st.solved);$('tiFDrill').value=DRILL_NAME;
+    TI.code=code;saveCode();TI.pending=DRILL_NAME+': '+st.solved;TI.sending=true;
+    $('tiFeedback').textContent='Sending…';
+  });
+  $('tiBack').onclick=closeTurnIn;
+  m.onclick=e=>{if(e.target===m)closeTurnIn()};
+  if(showForm)setTimeout(()=>{const el=TI.code?$('tiSubmit'):$('tiCode');if(el)el.focus()},50);
+}
+
+/* ---------- navigation ---------- */
+function render(){
+  st.sim=false; st.simFrom=null; st.attempted=false; st.done=false; st.fbi=0; st.fbShown=false;
+  renderWork(); updateCount();
+  if(PREVIEW){renderVisual(st.showAns); say('info',st.showAns?explain(st.p):'');}
+  else{renderVisual(false); say('',''); $('checkBtn').textContent='Check'; $('checkBtn').hidden=false; $('showBtn').hidden=true; $('nextBtn').hidden=true; focusFirst(); stepUI();}
+}
+function next(){
+  if(PREVIEW){
+    if(st.idx<st.hist.length-1) st.idx++; else {st.hist.push(gen());st.idx=st.hist.length-1}
+    st.p=st.hist[st.idx];
+  }else{
+    if(st.p&&!st.done) stat(s=>s.skipped++);
+    st.p=gen();
+  }
+  render();
+}
+function back(){if(st.idx>0){st.idx--;st.p=st.hist[st.idx];render()}}
+function newOfMode(){
+  if(PREVIEW){st.hist=st.hist.slice(0,st.idx+1);st.hist.push(gen());st.idx=st.hist.length-1;st.p=st.hist[st.idx];render()}
+  else next();
+}
+
+/* ---------- setup ---------- */
+if(PREVIEW){
+  document.title='Ratios (Preview)';
+  $('ansToggle').hidden=false;
+  $('actions').innerHTML='<button class="btn" id="backBtn">Back</button><button class="btn primary" id="nextBtn">Next</button>';
+  $('backBtn').addEventListener('click',back);
+  $('showAns').addEventListener('change',e=>{st.showAns=e.target.checked;render()});
+}else{
+  $('actions').innerHTML='<button class="btn primary" id="checkBtn">Check</button><button class="btn" id="showBtn" hidden>Show answer</button><button class="btn primary" id="nextBtn" hidden>Next</button>';
+  $('checkBtn').addEventListener('click',check);
+  $('showBtn').addEventListener('click',showAnswer);
+}
+$('nextBtn').addEventListener('click',next);
+$('turnBtn').addEventListener('click',()=>{if(TI.open)closeTurnIn();else openTurnIn()});
+$('guideT').addEventListener('change',e=>{
+  st.guide=e.target.checked;
+  if(PREVIEW||!st.done){const a=st.attempted;render();st.attempted=a}
+});
+
+document.addEventListener('keydown',e=>{
+  if($('teacher').open) return;
+  if(TI.open){if(e.key==='Escape')closeTurnIn();return}
+  if(!PREVIEW&&e.shiftKey&&e.key==='T'){e.preventDefault();openTeacher();return}
+  const t=e.target;
+  if(PREVIEW){
+    if(e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}
+    else if(e.key==='ArrowLeft'){e.preventDefault();back()}
+    else if(e.key==='a'||e.key==='A'){$('showAns').click()}
+    return;
+  }
+  if(e.key!=='Enter') return;
+  if(t.tagName==='BUTTON'&&t.id!=='nextBtn') return;
+  e.preventDefault();
+  if(st.done||t.id==='nextBtn'){next();return}
+  const ins=inputs(), i=ins.indexOf(t);
+  if(i>-1&&t.value&&!st.rw&&st.p.type!=='tape'&&!isFP(st.p)){const nx=ins.slice(i+1).find(x=>!x.value);if(nx){nx.focus();return}}
+  check();
+});
+
+/* never scroll: the whole page scales down to fit the window */
+function fitApp(){
+  const a=document.querySelector('.app'), w=innerWidth, h=innerHeight, tall=w<h*.9;
+  const z=Math.min(1,w/(tall?760:1280),h/(tall?1250:700));
+  a.classList.toggle('narrow',tall);
+  a.style.zoom=z; a.style.width=w/z+'px'; a.style.height=h/z+'px';
+  st.zl=null; fitEqn();
+}
+addEventListener('resize',fitApp); fitApp();
+next();
+</script>
+</body>
+</html>
