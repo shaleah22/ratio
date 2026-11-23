@@ -3,7 +3,89 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ratios</title>
+<title>Ratios + Metric Conversions</title>
+<style>
+:root{--ink:#1D2939;--muted:#667085;--line:#D0D5DD;--blue:#2F6FDE;--good:#1F8A5B;--goodBg:#E3F5EC;--yellow:#F2B400}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:#fff}
+body{font-family:Verdana,Geneva,Tahoma,sans-serif;color:var(--ink);display:flex;flex-direction:column;height:100vh;height:100dvh}
+.btn{font:bold 22px Verdana,Geneva,sans-serif;height:62px;padding:0 32px;border-radius:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+:focus-visible{outline:4px solid var(--yellow);outline-offset:2px}
+
+/* the question list: every question, any time, in three groups */
+.top{flex:none;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 26px;padding:10px 24px 10px;border-bottom:2px solid #EAECF0}
+.qnav{display:contents}
+.grp{display:flex;flex-direction:column;gap:4px}
+.grp h2{margin:0;font-size:14px;font-weight:bold;color:var(--muted);white-space:nowrap}
+.grp h2 span{font-weight:normal}
+.grp.on h2{color:var(--ink)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.qb{width:32px;height:32px;border-radius:8px;border:2px solid #CBD5E1;background:#fff;color:#475467;font:bold 13px Verdana,Geneva,sans-serif;cursor:pointer;padding:0}
+.qb:hover{border-color:var(--ink)}
+.qb.done{background:var(--goodBg);border-color:var(--good);color:var(--good)}
+.qb[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.qb.done[aria-current="true"]{background:var(--good);border-color:var(--good);color:#fff;box-shadow:inset 0 0 0 2px #fff}
+.side{margin-left:auto;display:flex;align-items:center;gap:18px}
+.count{font-size:17px;color:var(--muted);white-space:nowrap}
+.count b{font-size:26px;color:var(--ink);margin-left:6px}
+.btn.go{height:44px;font-size:18px;padding:0 18px;border-color:var(--good);color:var(--good)}
+.btn.go:hover{background:var(--goodBg)}
+
+.stage{flex:1;position:relative;min-height:0}
+iframe.part{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#fff}
+iframe.part.off{visibility:hidden;pointer-events:none}
+
+/* turn in: the student code goes to the Google Form */
+.ti-modal{position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.45);display:grid;place-items:center;padding:16px}
+.ti-card{background:#fff;border:2px solid var(--good);border-radius:16px;padding:22px 26px;width:100%;max-width:560px;max-height:94vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.ti-card h2{margin:0;font-size:30px;color:var(--good)}
+.ti-sub{margin:0;font-size:18px}
+.ti-part{display:flex;flex-direction:column;gap:6px}
+.ti-part h3{margin:0;font-size:15px;color:var(--muted)}
+.ti-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.ti-q{display:inline-flex;align-items:center;justify-content:center;height:32px;border-radius:8px;border:1.5px solid #cbd5e1;background:#fff;color:#94a3b8;font-weight:bold;font-size:14px}
+.ti-q.done{background:var(--goodBg);border-color:var(--good);color:var(--good)}
+.ti-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;color:var(--muted)}
+.ti-legend>span{display:inline-flex;align-items:center;gap:6px}
+.ti-legend .ti-q{width:22px;height:22px;font-size:11px}
+#tiForm{display:flex;flex-direction:column;gap:8px}
+#tiForm label{font-weight:bold}
+.ti-warn{background:var(--goodBg);border-radius:10px;padding:8px 12px;font-size:15px}
+#tiCode{font:18px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;text-transform:uppercase;max-width:260px;padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:10px}
+#tiCode:focus{outline:2px solid var(--good);outline-offset:1px}
+.ti-card .btn{height:50px;font-size:18px;padding:0 20px;align-self:flex-start}
+.ti-feedback{margin:0;font-size:17px}
+.ti-feedback:empty{display:none}
+.ti-feedback .ok{color:var(--good);font-size:22px;font-weight:800}
+@media (max-width:700px){
+  .top{padding:8px 12px}
+  .qb{width:30px;height:30px;font-size:12px}
+  .ti-grid{grid-template-columns:repeat(5,1fr)}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <nav class="qnav" id="qnav" aria-label="Questions"></nav>
+  <div class="side">
+    <div class="count" id="count"></div>
+    <button class="btn go" id="turnBtn" type="button">Turn in</button>
+  </div>
+</header>
+<div class="stage">
+  <iframe class="part" id="f1" title="Ratios, questions 1 to 20"></iframe>
+  <iframe class="part off" id="f2" title="Metric conversions, questions 21 to 30" tabindex="-1"></iframe>
+</div>
+
+<!-- The two drills, unchanged except for the hookup to this page. Each runs in its own frame. -->
+<script type="text/plain" id="src-ratio"><!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ratios (questions 1–20)</title>
 <style>
 :root{
   --ink:#1D2939; --muted:#667085; --line:#D0D5DD;
@@ -278,6 +360,8 @@ body{font-family:Verdana,Geneva,Tahoma,sans-serif;color:var(--ink);background:#f
 .pnum{font:bold 26px Verdana,Geneva,sans-serif;fill:var(--ink)}
 .pnum.q{fill:var(--blue)}
 
+.bar{display:none!important}
+.app{grid-template-rows:minmax(0,1fr)!important}
 /* teacher panel */
 dialog{border:2px solid var(--ink);border-radius:16px;padding:24px 28px;font-family:Verdana,Geneva,sans-serif;color:var(--ink)}
 dialog::backdrop{background:rgba(29,41,57,.35)}
@@ -864,7 +948,7 @@ function picModel(p){
     if(R.some(r=>!r.e)) return null;
     const T=p.tags.map(t=>t.toLowerCase()), whole=T.includes('all');
     const focus=R.map((r,i)=>T.some(t=>t===r.l.toLowerCase()||t.split(' + ').includes(r.l.toLowerCase()))?i:-1).filter(i=>i>-1);
-    const m={kind:'count',rows:R,focus,whole,total:p.total};
+    const m={kind:'count',rows:R,focus,whole,total:p.total!=null?p.total:whole?p.ans[T.indexOf('all')]:null};   /* snakes: the whole is in the answer, not p.total (was showing all: NaN) */
     /* simplest-form questions: after answering, regroup into equal groups of the simplified ratio */
     if(p.simp&&!whole&&p.ans){
       const RA=R.find(r=>r.l.toLowerCase()===p.tags[0].toLowerCase()), RB=R.find(r=>r.l.toLowerCase()===p.tags[1].toLowerCase());
@@ -1222,7 +1306,7 @@ function fpCheck(){
   const n=+a.value;
   if(n===v[I.m]){
     record(true); a.classList.add('ok'); say('good','✓ '+p.why);
-    st.solved++; stat(s=>s.solved++); updateCount(); finish(); return;
+    markSolved(); stat(s=>s.solved++); updateCount(); finish(); return;
   }
   record(false); a.classList.add('no'); $('showBtn').hidden=false;
   say('bad',n===v[o]+(v[I.r+2]-v[I.r])?'Multiply, don’t add.':`Do the same to the ${o?'bottom':'top'}: ${v[o]} × ${I.k}.`);
@@ -1266,7 +1350,7 @@ function simCheck(){
   if(u===sa&&v===sb){
     si.forEach(i=>{i.classList.add('ok');i.disabled=true});
     say('good','✓ '+(p.book&&p.why?p.why:`${x}:${y} = ${sa}:${sb}`));
-    st.solved++; stat(s=>s.solved++); updateCount(); finish(); return;
+    markSolved(); stat(s=>s.solved++); updateCount(); finish(); return;
   }
   si.forEach(i=>i.classList.add('no')); $('showBtn').hidden=false;
   const g=gcd(u,v);
@@ -1646,7 +1730,7 @@ function pick(i){
   bs.forEach(b=>b.classList.remove('ok','no'));
   bs[i].classList.add(ok?'ok':'no');
   record(ok);
-  if(ok){say('good','✓ '+p.why);st.solved++;stat(s=>s.solved++);updateCount();finish()}
+  if(ok){say('good','✓ '+p.why);markSolved();stat(s=>s.solved++);updateCount();finish()}
   else{say('bad',(p.nopes&&p.nopes[i])||p.nope);$('showBtn').hidden=false}
 }
 function check(){
@@ -1670,7 +1754,7 @@ function check(){
   say(r.res,r.msg);
   if(ok){
     ins.forEach(i=>i.classList.add('ok'));
-    st.solved++; stat(s=>s.solved++); updateCount(); finish();
+    markSolved(); stat(s=>s.solved++); updateCount(); finish();
   }else{
     ins.forEach((i,j)=>i.classList.add(r.ok&&r.ok[j]?'ok':'no'));
     const bad=ins.find(i=>i.classList.contains('no'))||ins[0];
@@ -1773,6 +1857,7 @@ function render(){
   else{renderVisual(false); say('',''); $('checkBtn').textContent='Check'; $('checkBtn').hidden=false; $('showBtn').hidden=true; $('nextBtn').hidden=true; focusFirst(); stepUI();}
 }
 function next(){
+  if(!PREVIEW){toWrap({type:'next'});return}   /* the wrapper picks the next question */
   if(PREVIEW){
     if(st.idx<st.hist.length-1) st.idx++; else {st.hist.push(gen());st.idx=st.hist.length-1}
     st.p=st.hist[st.idx];
@@ -1786,6 +1871,40 @@ function back(){if(st.idx>0){st.idx--;st.p=st.hist[st.idx];render()}}
 function newOfMode(){
   if(PREVIEW){st.hist=st.hist.slice(0,st.idx+1);st.hist.push(gen());st.idx=st.hist.length-1;st.p=st.hist[st.idx];render()}
   else next();
+}
+
+var PART_NAME='ratio';
+/* ---------- combined set: this page runs inside the wrapper ---------- */
+function toWrap(m){try{parent.postMessage(Object.assign({combo:PART_NAME},m),'*')}catch(e){}}
+function openTurnIn(){if(TI.open)return;TI.open=true;toWrap({type:'turnin'})}
+function markSolved(){if(!DONE[st.slot])DONE[st.slot]=true;st.solved=DONE.filter(Boolean).length}
+function updateCount(){toWrap({type:'state',done:DONE.slice(),cur:st.slot})}
+addEventListener('message',e=>{const d=e.data||{};if(d.combo!=='wrap')return;
+  if(d.type==='go'){if(d.i!==st.slot)loadSlot(d.i);else updateCount()}
+  if(d.type==='opened'){TI.open=true}
+  if(d.type==='closed'&&TI.open){closeTurnIn()}});
+/* 20 fixed questions, always in the same order, so a question number means the same kind of question every time:
+   1-10 writing ratios, 11-20 finding equivalent ratios. The numbers in each question are new every time. */
+const SLOTS=(()=>{
+  const Q=makeQuiz(), take=n=>Q.filter(p=>p.n===n);
+  const write=[
+    grpProb(GRP[6],'p2p'), grpProb(GRP[7],'p2p'),                                               /* 1-2: part to part (cafeteria lunch, parking lot) */
+    grpProb(GRP[5],'p2w'), grpProb(GRP[8],'p2w'),                                               /* 3-4: part to whole (playlist, fruit snacks) */
+    ...take('zoo').slice(0,4),                                                                  /* 5-8: zoo, simplest form */
+    ...take('snakes1'), ...take('snakes2')];                                                     /* 9-10: snakes */
+  const equiv=[
+    ...take('coffee'),                                                                           /* 11 */
+    ...take('bouquet'), ...take('salad'), ...take('juice'), ...take('fish'), ...take('butterflies'), /* 12-16 */
+    tapeThree(), tapeFromB(), tapeThree(), tapeHowMore()];                                       /* 17-20: tape diagrams */
+  return write.concat(equiv);
+})(), DONE=SLOTS.map(()=>false);
+function loadSlot(i){st.slot=i;st.p=SLOTS[i];render();if(DONE[i])showSolved()}
+/* a question solved earlier opens with its answer filled in */
+function showSolved(){
+  const keep=stat; stat=()=>{};
+  try{showAnswer()}finally{stat=keep}
+  document.querySelectorAll('#eqn .shown').forEach(x=>x.classList.replace('shown','ok'));
+  say('good','✓ Solved. '+explain(st.p));
 }
 
 /* ---------- setup ---------- */
@@ -1836,7 +1955,775 @@ function fitApp(){
   st.zl=null; fitEqn();
 }
 addEventListener('resize',fitApp); fitApp();
-next();
+loadSlot(0);
+<\/script>
+</body>
+</html>
+</script>
+<script type="text/plain" id="src-kh"><!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metric Conversions (questions 21–30)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sans:'Plus Jakarta Sans','Segoe UI',Helvetica,Arial,sans-serif;
+  --ink:#1D2939; --muted:#667085; --line:#D0D5DD;
+  --blue:#2F6FDE; --blueBg:#DCE7FB; --good:#1F8A5B; --goodBg:#DDF3E8; --bad:#C2372F; --badBg:#FCE8E6;
+  --hl:#FFF0B3; --own:#6A3D9A; --ownBg:#F1EAF8; --yellow:#F2B400; --stair:#F2F4F7; --base:#E4E7EC;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:#fff;font-variant-numeric:lining-nums tabular-nums}
+.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-rows:auto 1fr;gap:18px;padding:16px 28px 24px;max-width:1500px;margin:0 auto}
+
+.bar{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.brand{font:800 32px var(--sans);letter-spacing:-.02em}
+.count{margin-left:auto;font-size:20px;color:var(--muted)}
+.count b{font-size:30px;color:var(--ink);margin-left:8px}
+
+.btn{font:bold 22px var(--sans);height:62px;padding:0 32px;border-radius:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.help{border-color:var(--blue);color:var(--blue)}
+.btn.help:hover{background:var(--blueBg)}
+.btn.go{height:54px;font-size:20px;padding:0 22px;border-color:var(--good);color:var(--good)}
+.btn.go:hover{background:#E3F5EC}
+.btn:focus-visible,.dir:focus-visible,.arrow:focus-visible{outline:4px solid var(--yellow);outline-offset:3px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(440px,1fr);gap:28px;min-height:0}
+.visual{border:2px solid var(--line);border-radius:18px;padding:24px 26px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.qcard{font-size:24px;line-height:1.45;margin:0;max-width:60ch}
+.qcard b{white-space:nowrap;background:var(--hl);padding:0 6px;border-radius:6px}
+.stairs{width:100%;flex:1 1 auto;min-height:260px;display:block}
+.rule{margin:0;font-size:17px;color:var(--muted);text-align:center}
+
+/* the staircase */
+.stair rect.step{fill:var(--stair);stroke:var(--ink);stroke-width:2}
+.stair.base rect.step{fill:var(--base)}
+.stair.start rect.step{fill:var(--blueBg);stroke:var(--blue);stroke-width:4}
+.stair.end rect.step{fill:var(--goodBg);stroke:var(--good);stroke-width:4}
+.stair.miss rect.step{fill:var(--badBg);stroke:var(--bad);stroke-width:4}
+.stairs.pick .stair{cursor:pointer}
+.stairs.pick .stair:hover rect.step{stroke-width:4}
+.stair:focus{outline:none}
+.stair:focus-visible rect.step{stroke:var(--yellow);stroke-width:6}
+.stair .w{font:700 19px var(--sans);fill:var(--ink)}
+.stair .p{font:15px var(--sans);fill:var(--muted)}
+.stair .u{font:bold 30px var(--sans);fill:var(--ink)}
+.hop{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round}
+.hopn{font:bold 18px var(--sans);fill:var(--blue)}
+.hopcap{font:bold 22px var(--sans);fill:var(--blue)}
+
+/* work side */
+.work{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:24px;min-width:0}
+.mode{display:flex;align-items:center;gap:16px;padding:14px 22px 14px 14px;border-radius:16px;border:3px solid var(--blue);background:var(--blueBg);text-align:left}
+.mode .ic{flex:none;display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--blue);color:#fff;font:bold 22px var(--sans)}
+.mode h2{margin:0;font-family:var(--sans);font-weight:800;font-size:30px;letter-spacing:-.01em;line-height:1.2;color:var(--blue)}
+.mode p{margin:2px 0 0;font-size:17px;color:var(--ink)}
+.mode.own{border-color:var(--own);background:var(--ownBg)}
+.mode.own .ic{background:var(--own)}
+.mode.own h2{color:var(--own)}
+.stage.together .visual{border-color:var(--blue)}
+.stage.own .visual{border-color:var(--own)}
+@media (prefers-reduced-motion:no-preference){.mode.pop{animation:pop .45s ease-out}@keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:none;opacity:1}}}
+.prompt{font-size:28px;line-height:1.35;margin:0;max-width:24ch}
+.prompt b{white-space:nowrap}
+.area{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%}
+
+.jumps{display:flex;align-items:center;gap:14px;font-size:28px;font-weight:bold}
+input.num{width:110px;height:84px;font:bold 44px var(--sans);text-align:center;border:3px solid var(--ink);border-radius:14px;color:var(--ink);background:#fff}
+input.num.wide{width:230px}
+input.num:focus{outline:4px solid var(--yellow);outline-offset:2px}
+input.num.ok{border-color:var(--good);background:var(--goodBg)}
+input.num.no{border-color:var(--bad);background:var(--badBg)}
+input.num:disabled{opacity:1;color:var(--ink)}
+.dirs{display:flex;gap:12px}
+.dir{font:bold 20px var(--sans);height:64px;padding:0 18px;border-radius:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;line-height:1.15}
+.dir kbd{display:inline-block;font:bold 14px var(--sans);padding:1px 6px;margin-left:4px;border:1.5px solid currentColor;border-radius:5px;vertical-align:2px;opacity:.75}
+.dir small{display:block;font-weight:normal;font-size:14px;color:var(--muted)}
+.dir[aria-pressed="true"]{background:var(--ink);color:#fff}
+.dir[aria-pressed="true"] small{color:#E4E7EC}
+.dir.ok{background:var(--good);border-color:var(--good)}
+.dir:disabled{cursor:default}
+
+.mover{width:100%;overflow-x:auto;display:flex;justify-content:center}
+.mover svg{display:block;max-width:none}
+.cell{fill:#fff;stroke:var(--ink);stroke-width:2}
+.cell.gap{fill:#fff;stroke:var(--muted);stroke-width:2;stroke-dasharray:7 6}
+.cell.gap.want{fill:#FFF8DB;stroke:var(--yellow);stroke-width:3}
+.dig{font:bold 46px var(--sans);fill:var(--ink)}
+.dig.fade{fill:#B8C0CC}
+.dig.zero{fill:var(--good)}
+.dot{fill:var(--blue)}
+.dot0{fill:none;stroke:#98A2B3;stroke-width:2;stroke-dasharray:3 3}
+.arrows{display:flex;gap:12px;align-items:center}
+.arrow{font:bold 30px var(--sans);width:84px;height:64px;border-radius:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.arrow:disabled{opacity:.35;cursor:default}
+.moved{font-size:20px;color:var(--muted);min-width:9ch}
+.eq{display:flex;align-items:center;gap:14px;font:bold 38px var(--sans);flex-wrap:wrap;justify-content:center}
+.tip{font-size:18px;color:var(--muted);margin:0}
+
+.feedback{font-size:24px;min-height:34px;font-weight:bold;margin:0;max-width:30ch;line-height:1.35}
+.feedback.good{color:var(--good)} .feedback.bad{color:var(--bad)} .feedback.info{color:var(--blue)}
+.actions{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+
+/* turn in: the student code goes to the Google Form */
+.ti-modal{position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.45);display:grid;place-items:center;padding:16px}
+.ti-card{background:#fff;border:2px solid var(--good);border-radius:16px;padding:22px 26px;width:100%;max-width:560px;max-height:94vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.ti-card h2{margin:0;font-family:var(--sans);font-size:32px;color:var(--good)}
+.ti-sub{margin:0;font-size:18px}
+.ti-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.ti-q{display:inline-flex;align-items:center;justify-content:center;height:32px;border-radius:8px;border:1.5px solid #cbd5e1;background:#fff;color:#94a3b8;font-weight:bold;font-size:14px}
+.ti-q.done{background:#E3F5EC;border-color:var(--good);color:var(--good)}
+.ti-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;color:var(--muted)}
+.ti-legend>span{display:inline-flex;align-items:center;gap:6px}
+.ti-legend .ti-q{width:22px;height:22px;font-size:11px}
+#tiForm{display:flex;flex-direction:column;gap:8px}
+#tiForm label{font-weight:bold}
+.ti-warn{background:#E3F5EC;border-radius:10px;padding:8px 12px;font-size:15px}
+#tiCode{font:18px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;text-transform:uppercase;max-width:260px;padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:10px}
+#tiCode:focus{outline:2px solid var(--good);outline-offset:1px}
+.ti-card .btn{height:50px;font-size:18px;padding:0 20px;align-self:flex-start}
+.ti-feedback{margin:0;font-size:17px}
+.ti-feedback:empty{display:none}
+.ti-feedback .ok{color:var(--good);font-size:22px;font-weight:800}
+
+.bar{display:none!important}
+.app{grid-template-rows:1fr!important;min-height:0!important;height:100vh;height:100dvh}
+@media (max-width:1050px){
+  .stage{grid-template-columns:minmax(0,1fr)}
+  .app{padding:12px 14px 20px}
+  .prompt{font-size:24px}
+}
+@media (max-width:520px){
+  .brand{font-size:24px}
+  .qcard{font-size:20px}
+  .ti-grid{grid-template-columns:repeat(5,1fr)}
+  .btn{height:56px;font-size:19px;padding:0 22px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .hop.draw{stroke-dasharray:300;stroke-dashoffset:300;animation:draw .5s ease-out forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">Metric Conversions</div>
+    <div class="count" id="count"></div>
+    <button class="btn go" id="turnBtn" type="button">Turn in</button>
+  </div>
+  <div class="stage">
+    <section class="visual" aria-label="Problem">
+      <p class="qcard" id="q"></p>
+      <svg class="stairs" id="stairs" viewBox="0 0 760 530" role="group" aria-label="King Henry Died By Drinking Chocolate Milk staircase"></svg>
+      <p class="rule">Down the stairs (to the right): move the decimal point right.<br>Up the stairs (to the left): move it left.</p>
+    </section>
+    <section class="work" aria-live="polite">
+      <div class="mode" id="mode"></div>
+      <p class="prompt" id="prompt"></p>
+      <div class="area" id="area"></div>
+      <p class="feedback" id="feedback"></p>
+      <div class="actions"><button class="btn help" id="helpBtn" type="button" hidden>Help</button></div>
+    </section>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const one=a=>a[rand(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---------- King Henry Died By Drinking Chocolate Milk ---------- */
+const PRE=[
+  {w:'King',p:'kilo',a:'k'},{w:'Henry',p:'hecto',a:'h'},{w:'Died',p:'deka',a:'da'},
+  {w:'By',p:'',a:'',base:true},
+  {w:'Drinking',p:'deci',a:'d'},{w:'Chocolate',p:'centi',a:'c'},{w:'Milk',p:'milli',a:'m'}];
+const BASE={m:'meter',g:'gram',L:'liter'};
+const ab=(t,i)=>PRE[i].a+t;                                   /* km, dag, mL */
+const name=(t,i,pl=true)=>PRE[i].p+BASE[t]+(pl?'s':'');       /* kilometers */
+const K=0,H=1,DA=2,B=3,D=4,C=5,M=6;
+const full=(t,i,pl=true)=>`${name(t,i,pl)} (${ab(t,i)})`;                 /* kilometers (km) */
+const amt=(v,t,i)=>`<b>${v} ${full(t,i,v!=='1')}</b>`;                     /* 3.5 kilometers (km) */
+
+/* ---------- moving the decimal point, done with digit strings (no rounding errors) ---------- */
+function parts(v){const [i,f='']=v.split('.');return {dg:i+f,p:i.length}}
+function fmt(dg,p){
+  let s=dg;
+  if(p>s.length) s+='0'.repeat(p-s.length);
+  if(p<0){s='0'.repeat(-p)+s;p=0}
+  const i=s.slice(0,p).replace(/^0+/,'')||'0', f=s.slice(p).replace(/0+$/,'');
+  return f?i+'.'+f:i;
+}
+const shift=(v,n)=>{const {dg,p}=parts(v);return fmt(dg,p+n)};
+function norm(s){
+  s=String(s).replace(/[,\s]/g,'');
+  if(!/^\d*\.?\d*$/.test(s)||!/\d/.test(s)) return null;
+  if(s[0]==='.') s='0'+s;
+  const {dg,p}=parts(s); return fmt(dg,p);
+}
+const show=v=>{const [i,f]=v.split('.');return i.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(f?'.'+f:'')};
+
+/* ---------- problems ---------- */
+const KID=[['Maya','she'],['Jordan','he'],['Luis','he'],['Aisha','she'],['Ethan','he'],['Sofia','she'],['Malik','he'],['Chloe','she'],['Andre','he'],['Priya','she']];
+const d1=(lo,hi)=>`${rand(lo,hi)}.${rand(1,9)}`;              /* 4.7 */
+const d2=(lo,hi)=>`${rand(lo,hi)}.${rand(0,9)}${rand(1,9)}`;  /* 1.45 */
+const n=(lo,hi)=>String(rand(lo,hi));
+const STORIES=[
+  ['m',K,B,()=>one([n(2,9),d1(1,9)]),v=>{const [k,pr]=one(KID);return `${k} ran ${amt(v,'m',0)} in a race. How many meters (${ab('m',3)}) did ${pr} run?`}],
+  ['m',C,M,()=>one([n(9,19),d1(9,18)]),v=>`A pencil is ${amt(v,'m',5)} long. How long is it in millimeters (${ab('m',6)})?`],
+  ['m',B,C,()=>d2(1,1),v=>{const [k,pr]=one(KID);return `${k} is ${amt(v,'m',3)} tall. How tall is ${pr} in centimeters (${ab('m',5)})?`}],
+  ['m',M,C,()=>n(3,9),v=>`A ladybug is ${amt(v,'m',6)} long. How long is it in centimeters (${ab('m',5)})?`],
+  ['m',B,K,()=>n(350,4800),v=>`The walk from school to the park is ${amt(v,'m',3)}. How many kilometers (${ab('m',0)}) is that?`],
+  ['m',C,B,()=>n(45,250),v=>`A desk is ${amt(v,'m',5)} wide. How many meters (${ab('m',3)}) wide is it?`],
+  ['m',DA,B,()=>d1(1,1),v=>`A school bus is about ${amt(v,'m',2)} long. How many meters (${ab('m',3)}) long is it?`],
+  ['m',H,B,()=>one([n(2,9),d1(1,4)]),v=>`A soccer field is about ${amt(v,'m',1)} long. How many meters (${ab('m',3)}) is that?`],
+  ['m',D,C,()=>one([n(2,9),d1(1,3)]),v=>`A shoe box is ${amt(v,'m',4)} long. How long is it in centimeters (${ab('m',5)})?`],
+  ['g',K,B,()=>one([n(2,9),d1(1,9)]),v=>`A bag of apples has a mass of ${amt(v,'g',0)}. What is its mass in grams (${ab('g',3)})?`],
+  ['g',B,K,()=>n(250,3500),v=>`A bag of dog food has a mass of ${amt(v,'g',3)}. What is its mass in kilograms (${ab('g',0)})?`],
+  ['g',B,M,()=>one(['1','2','1.5','0.5','3']),v=>`A paper clip has a mass of ${amt(v,'g',3)}. What is its mass in milligrams (${ab('g',6)})?`],
+  ['g',M,B,()=>n(200,900),v=>`A vitamin has ${amt(v,'g',6)} of vitamin C. How many grams (${ab('g',3)}) is that?`],
+  ['g',C,B,()=>n(40,95),v=>`A grape has a mass of ${amt(v,'g',5)}. How many grams (${ab('g',3)}) is that?`],
+  ['L',M,B,()=>n(250,1500),v=>`A water bottle holds ${amt(v,'L',6)}. How many liters (${ab('L',3)}) is that?`],
+  ['L',B,M,()=>one([n(2,4),d1(1,4)]),v=>`A jug of juice holds ${amt(v,'L',3)}. How many milliliters (${ab('L',6)}) is that?`],
+  ['L',K,B,()=>d1(1,9),v=>`A small pool holds ${amt(v,'L',0)} of water. How many liters (${ab('L',3)}) is that?`],
+  ['L',D,M,()=>one([n(2,5),d1(1,4)]),v=>`A cup holds ${amt(v,'L',4)}. How many milliliters (${ab('L',6)}) is that?`],
+  ['L',H,B,()=>one([n(2,5),d1(1,3)]),v=>`A rain barrel holds ${amt(v,'L',1)}. How many liters (${ab('L',3)}) is that?`],
+  ['L',B,C,()=>d1(1,6),v=>`A soup pot holds ${amt(v,'L',3)}. How many centiliters (${ab('L',5)}) is that?`]
+];
+function randVal(){
+  return one([n(1,9),n(10,99),n(100,950),d1(1,9),d1(10,99),d2(1,9),`0.${rand(1,9)}`,`0.${rand(1,9)}${rand(1,9)}`,`0.0${rand(1,9)}`]);
+}
+function okAns(a){const [i,f='']=a.split('.');return f.length<=5&&i.length<=7}
+function plainProb(){
+  const t=one(['m','g','L']);
+  for(;;){
+    const a=rand(0,6), b=rand(0,6); if(a===b) continue;
+    const v=randVal(), ans=shift(v,b-a); if(!okAns(ans)) continue;
+    return {t,a,b,v,ans,q:`Convert ${amt(v,t,a)} to ${full(t,b)}.`};
+  }
+}
+let storyBag=[];
+function storyProb(){
+  if(!storyBag.length) storyBag=shuffle(STORIES);
+  const [t,a,b,val,txt]=storyBag.pop(), v=val();
+  return {t,a,b,v,ans:shift(v,b-a),q:txt(v)};
+}
+/* deka (dam, dag, daL) comes up in at most one problem per session */
+let dekaUsed=false;
+function gen(){
+  for(;;){
+    const p=Math.random()<.5?storyProb():plainProb();
+    const deka=p.a===DA||p.b===DA;
+    if(deka&&dekaUsed) continue;
+    if(deka) dekaUsed=true;
+    return p;
+  }
+}
+
+/* ---------- state ---------- */
+const st={guided:false,p:null,step:1,tap:0,dir:0,dp:0,p0:0,wrong:false,done:false,solved:0};
+const STEP_PROMPT={
+  2:p=>`How many jumps from <b>${ab(p.t,p.a)}</b> to <b>${ab(p.t,p.b)}</b>, and which way?`,
+  3:p=>{const k=Math.abs(p.b-p.a);return `Move the decimal point <b>${k} ${k===1?'place':'places'} ${p.b>p.a?'right':'left'}</b>.`},
+  4:p=>`Write the answer.`
+};
+
+/* ---------- staircase drawing ---------- */
+const SX=20, SW=103, TOP=78, RISE=50, BOT=520;
+const sx=i=>SX+i*SW, sy=i=>TOP+i*RISE, cx=i=>sx(i)+SW/2;
+function drawStairs(){
+  const p=st.p, s=$('stairs');
+  let h='';
+  for(let i=0;i<7;i++){
+    let cls='stair'+(PRE[i].base?' base':'');
+    const reveal=st.guided||st.done;            /* on-your-own problems: no hints on the stairs until solved */
+    if(reveal&&(st.step>1||st.tap>0)&&i===p.a) cls+=' start';
+    if(reveal&&st.step>1&&i===p.b) cls+=' end';
+    if(st.miss===i) cls+=' miss';
+    const y=sy(i);
+    h+=`<g class="${cls}" data-i="${i}" ${st.step===1&&!st.done?'tabindex="0" role="button"':''} aria-label="${PRE[i].w}: ${PRE[i].base?BASE[p.t]+'s, the base unit':name(p.t,i)} (${ab(p.t,i)})">
+      <rect class="step" x="${sx(i)}" y="${y}" width="${SW}" height="${BOT-y}" rx="6"/>
+      <text class="w" x="${cx(i)}" y="${y+30}" text-anchor="middle">${PRE[i].w}</text>
+      <text class="p" x="${cx(i)}" y="${y+52}" text-anchor="middle">${PRE[i].base?'base':PRE[i].p}</text>
+      <text class="u" x="${cx(i)}" y="${y+92}" text-anchor="middle">${ab(p.t,i)}</text></g>`;
+  }
+  /* jumps from the start stair to the end stair, drawn once the count is right */
+  if(st.step>2&&(st.guided||st.done)){
+    const dir=Math.sign(p.b-p.a), k=Math.abs(p.b-p.a);
+    for(let j=0;j<k;j++){
+      const i0=p.a+j*dir, i1=i0+dir, x0=cx(i0), x1=cx(i1), y0=sy(i0)-8, y1=sy(i1)-8, top=Math.min(y0,y1)-38;
+      h+=`<path class="hop${st.anim?' draw':''}" style="animation-delay:${j*.18}s" d="M${x0} ${y0} Q${(x0+x1)/2} ${top} ${x1} ${y1}"/>`;
+      h+=`<path class="hop${st.anim?' draw':''}" style="animation-delay:${j*.18}s" d="M${x1-9*dir} ${y1-10} L${x1} ${y1} L${x1+3*dir} ${y1-14}"/>`;
+      h+=`<text class="hopn" x="${(x0+x1)/2}" y="${top+2}" text-anchor="middle">${j+1}</text>`;
+    }
+    h+=`<text class="hopcap" x="380" y="26" text-anchor="middle">${k} ${k===1?'jump':'jumps'} ${dir>0?'right':'left'}</text>`;
+  }
+  s.innerHTML=h;
+  s.classList.toggle('pick',st.step===1&&!st.done);
+  st.anim=false;
+}
+$('stairs').addEventListener('click',e=>{const g=e.target.closest('.stair');if(g)tapStair(+g.dataset.i)});
+$('stairs').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ') return;
+  const g=e.target.closest&&e.target.closest('.stair'); if(!g) return;
+  e.preventDefault(); e.stopPropagation(); tapStair(+g.dataset.i);
+});
+
+/* ---------- step 1: tap the starting unit, then the ending unit ---------- */
+function tapStair(i){
+  const p=st.p; if(st.step!==1||st.done) return;
+  const want=st.tap===0?p.a:p.b, u=ab(p.t,want);
+  if(i===want){
+    st.miss=null;
+    if(st.tap===0){st.tap=1; drawStairs(); say('good',`✓ ${u} is ${PRE[i].w} (${PRE[i].base?'the base unit':PRE[i].p}).`); setPrompt(`Now find <b>${ab(p.t,p.b)}</b>. Tap it.`); focusStair(p.b)}
+    else{say('good',`✓ ${u} is ${PRE[i].w} (${PRE[i].base?'the base unit':PRE[i].p}).`); goStep(2)}
+    return;
+  }
+  miss(); st.miss=i; drawStairs(); focusStair(i);
+  const pre=PRE[want];
+  say('bad',`That’s ${ab(p.t,i)}. ${pre.base?`${u} has no prefix: it’s the base unit, By.`:`${u} starts with ${pre.a}, which is ${pre.p}.`}`);
+}
+function focusStair(i){const g=document.querySelector(`#stairs .stair[data-i="${i}"]`);if(g&&g.getAttribute('tabindex')!==null&&document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#stairs'))g.focus()}
+
+/* ---------- work area ---------- */
+function setPrompt(h){$('prompt').innerHTML=h}
+function say(c,m){const f=$('feedback');f.className='feedback '+c;f.textContent=m}
+function miss(){st.wrong=true}
+function goStep(k){
+  st.step=k; st.anim=k===3;
+  drawStairs();
+  if(k===2) buildJumps();
+  if(k===3) buildMover();
+  if(k===4) buildAnswer();
+  setPrompt(STEP_PROMPT[k](st.p));
+}
+
+/* step 2 */
+function buildJumps(){
+  $('area').innerHTML=`<div class="jumps"><input class="num" id="jn" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Number of jumps"> <span>jumps</span></div>
+    <div class="dirs" role="group" aria-label="Which way">
+      <button class="dir" type="button" data-d="-1" aria-pressed="false" aria-keyshortcuts="L">← Left <kbd>L</kbd><small>up the stairs</small></button>
+      <button class="dir" type="button" data-d="1" aria-pressed="false" aria-keyshortcuts="R">Right → <kbd>R</kbd><small>down the stairs</small></button></div>`;
+  st.dir=0;
+  document.querySelectorAll('.dir').forEach(b=>b.addEventListener('click',()=>pickDir(+b.dataset.d)));
+  /* the number checks itself as soon as it's typed: no Enter needed */
+  $('jn').addEventListener('input',e=>{
+    const el=e.target; el.value=el.value.replace(/\D/g,''); el.classList.remove('no','ok');
+    if(!el.value){say('','');return}
+    const p=st.p, k=Math.abs(p.b-p.a);
+    if(st.dir){checkJumps();return}
+    if(+el.value===k){el.classList.add('ok');say('good',`✓ ${k} ${k===1?'jump':'jumps'}. Now which way? Press L or R.`)}
+    else{miss();el.classList.add('no');say('bad',`Count each stair you step onto from ${ab(p.t,p.a)} to ${ab(p.t,p.b)}.`);el.select()}
+  });
+  setTimeout(()=>{const x=$('jn');if(x)x.focus()},30);
+}
+function pickDir(d){
+  if(st.step!==2||st.done) return;
+  st.dir=d; document.querySelectorAll('.dir').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.d===d));
+  if($('jn').value) checkJumps(); else{say('info','Now type how many jumps.');$('jn').focus()}
+}
+function checkJumps(){
+  const p=st.p, k=Math.abs(p.b-p.a), dir=Math.sign(p.b-p.a), v=$('jn').value, from=ab(p.t,p.a), to=ab(p.t,p.b);
+  if(!v){say('info','Type how many jumps.');$('jn').focus();return}
+  if(!st.dir){say('info','Now pick a direction: press L for left or R for right.');return}
+  const okN=+v===k, okD=st.dir===dir;
+  if(okN&&okD){
+    $('jn').classList.add('ok');$('jn').disabled=true;
+    document.querySelectorAll('.dir').forEach(b=>{b.disabled=true;if(+b.dataset.d===dir)b.classList.add('ok')});
+    say('good',`✓ ${k} ${k===1?'jump':'jumps'} ${dir>0?'right, down the stairs':'left, up the stairs'}.`);
+    goStep(3); return;
+  }
+  miss();
+  $('jn').classList.toggle('no',!okN); $('jn').classList.toggle('ok',okN);
+  say('bad',okN?`Right number. Which way is ${to} from ${from} on the stairs?`:okD?`Right way. Count each stair you step onto from ${from} to ${to}.`:`Start on ${from} and step to ${to}. Count the stairs and watch which way you go.`);
+  if(!okN){$('jn').focus();$('jn').select()}
+}
+
+/* step 3: move the decimal point */
+function buildMover(){
+  const {p:p0}=parts(st.p.v); st.p0=p0; st.dp=p0;
+  $('area').innerHTML=`<div class="mover" id="mover"></div>
+    <div class="arrows"><button class="arrow" id="mvL" type="button" aria-label="Move the decimal point left">◀</button>
+    <span class="moved" id="moved"></span>
+    <button class="arrow" id="mvR" type="button" aria-label="Move the decimal point right">▶</button></div>`;
+  $('mvL').onclick=()=>moveDot(-1); $('mvR').onclick=()=>moveDot(1);
+  drawMover(); setTimeout(()=>{const x=$('mvR');if(x)x.focus()},30);
+}
+function moveDot(d){
+  if(st.step!==3||st.done) return;
+  const nd=st.dp+d; if(Math.abs(nd-st.p0)>7) return;
+  st.dp=nd; drawMover();
+  const p=st.p, want=p.b-p.a, moved=st.dp-st.p0;
+  if(moved===want){checkMover();return}
+  if(moved&&Math.sign(moved)!==Math.sign(want)){miss();say('bad',`The jumps on the stairs go ${want>0?'right':'left'}. Move the decimal point that way.`)}
+  else say('','');
+}
+function drawMover(final){
+  const {dg}=parts(st.p.v), p0=st.p0, dp=st.dp, L=dg.length;
+  const lo=Math.min(0,dp,p0), hi=Math.max(L,dp,p0), CW=60, GAP=24, PADX=20, Y=70, H=80;
+  const W=PADX*2+(hi-lo)*CW+(hi-lo-1)*GAP, xb=k=>PADX+(k-lo)*(CW+GAP)-GAP/2;   /* x of the boundary before cell k */
+  const firstNZ=[...dg].findIndex(c=>c!=='0');
+  let h='';
+  for(let i=lo;i<hi;i++){
+    const x=PADX+(i-lo)*(CW+GAP), real=i>=0&&i<L;
+    if(real){
+      const fade=dg[i]==='0'&&(firstNZ<0||i<firstNZ)&&i<dp-1;
+      h+=`<rect class="cell" x="${x}" y="${Y}" width="${CW}" height="${H}" rx="10"/><text class="dig${fade?' fade':''}" x="${x+CW/2}" y="${Y+H/2+16}" text-anchor="middle">${dg[i]}</text>`;
+    }else{
+      const want=st.step>=4;
+      h+=`<rect class="cell gap${want&&!final?' want':''}" x="${x}" y="${Y}" width="${CW}" height="${H}" rx="10"/>`;
+      if(final) h+=`<text class="dig zero" x="${x+CW/2}" y="${Y+H/2+16}" text-anchor="middle">0</text>`;
+    }
+  }
+  /* where the decimal point started, the jumps it made, and where it is now */
+  if(dp!==p0) h+=`<circle class="dot0" cx="${xb(p0)}" cy="${Y+H-8}" r="7"/>`;
+  const dir=Math.sign(dp-p0);
+  for(let j=0;j<Math.abs(dp-p0);j++){
+    const a=xb(p0+j*dir), b=xb(p0+(j+1)*dir);
+    h+=`<path class="hop" d="M${a} ${Y-6} Q${(a+b)/2} ${Y-46} ${b} ${Y-6}"/><path class="hop" d="M${b-9*dir} ${Y-16} L${b} ${Y-6} L${b+2*dir} ${Y-19}"/>`;
+    h+=`<text class="hopn" x="${(a+b)/2}" y="${Y-38}" text-anchor="middle">${j+1}</text>`;
+  }
+  h+=`<circle class="dot" cx="${xb(dp)}" cy="${Y+H-8}" r="8"/>`;
+  $('mover').innerHTML=`<svg width="${W}" height="${Y+H+14}" viewBox="0 0 ${W} ${Y+H+14}" role="img" aria-label="Decimal point moved ${Math.abs(dp-p0)} ${dir>0?'right':'left'}">${h}</svg>`;
+  const m=$('moved'); if(m) m.textContent=dp===p0?'':`${Math.abs(dp-p0)} ${dir>0?'right':'left'}`;
+}
+function checkMover(){
+  const p=st.p, k=Math.abs(p.b-p.a), dir=Math.sign(p.b-p.a), moved=st.dp-st.p0;
+  if(moved===k*dir){
+    $('mvL').disabled=$('mvR').disabled=true;
+    say('good',`✓ The decimal point moved ${k} ${k===1?'place':'places'} ${dir>0?'right':'left'}.`);
+    goStep(4); return;
+  }
+  miss();
+  if(!moved) say('bad','Use the arrows to move the decimal point.');
+  else if(Math.sign(moved)!==dir) say('bad',`You moved it ${dir>0?'left':'right'}. The jumps on the stairs go ${dir>0?'right':'left'}.`);
+  else say('bad',`You moved it ${Math.abs(moved)}. It needs to move ${k}, one for each jump.`);
+}
+
+/* step 4: write the answer */
+function buildAnswer(){
+  const p=st.p, mv=st.guided?$('mover').outerHTML:'';
+  const gaps=st.dp>parts(p.v).dg.length||st.dp<0;
+  $('area').innerHTML=`${mv}${st.guided?`<p class="tip">${gaps?'Put a 0 in each empty box.':'Read the number with the decimal point where it is now.'}</p>`:''}
+    <div class="eq"><span>${show(p.v)} ${ab(p.t,p.a)} =</span><input class="num wide" id="ans" inputmode="decimal" autocomplete="off" aria-label="Answer in ${name(p.t,p.b)}"><span>${ab(p.t,p.b)}</span></div>`;
+  if(st.guided) drawMover();
+  $('ans').addEventListener('input',e=>{
+    const el=e.target; el.classList.remove('no'); clearTimeout(st.idleT);
+    if(norm(el.value)===norm(st.p.ans)){checkAnswer();return}
+    if(el.value.trim()) st.idleT=setTimeout(()=>{if(!st.done&&st.step===4&&!TI.open)checkAnswer(true)},2200);
+    else say('','');
+  });
+  setTimeout(()=>{const x=$('ans');if(x)x.focus()},30);
+}
+function checkAnswer(idle){
+  clearTimeout(st.idleT);
+  const p=st.p, el=$('ans'), got=norm(el.value), want=norm(p.ans);
+  if(!el.value.trim()){if(!idle){say('info','Type your answer.');el.focus()}return}
+  if(got===want){el.classList.add('ok');el.disabled=true;if(st.guided)drawMover(true);else st.anim=true;solved();return}
+  miss(); el.classList.add('no');
+  const strip=s=>(s||'').replace(/[0.]/g,'');
+  if(got===null) say('bad','Use only digits and one decimal point.');
+  else if(got===norm(p.v)) say('bad','That’s the number you started with. Read it where the decimal point is now.');
+  else if(got===norm(shift(p.v,p.a-p.b))) say('bad','That moves the decimal point the wrong way.');
+  else if(strip(got)===strip(want)) say('bad',st.guided?'Check the zeros: every empty box needs a 0.':'Check the zeros. Each place the decimal point jumps past an empty spot needs a 0.');
+  else say('bad',st.guided?'Read the digits in the boxes, with the decimal point where you moved it.':`Count the jumps from ${ab(p.t,p.a)} to ${ab(p.t,p.b)} on the stairs, then move the decimal point that many places.`);
+  if(!idle){el.focus(); el.select();}
+}
+
+/* ---------- check / show answer / next ---------- */
+function check(){
+  if(st.done||TI.open) return;
+  if(st.step===2) checkJumps(); else if(st.step===3) checkMover(); else if(st.step===4) checkAnswer();
+}
+function solved(){
+  markSolved(); updateCount();
+  say('good',`✓ ${show(st.p.v)} ${ab(st.p.t,st.p.a)} = ${show(st.p.ans)} ${ab(st.p.t,st.p.b)}`);
+  finish();
+}
+function finish(){
+  $('helpBtn').hidden=true;
+  st.done=true; drawStairs();
+  clearTimeout(st.nextT); st.nextT=setTimeout(()=>{if(!TI.open)next()},2200);   /* right answer: move on by itself */
+}
+/* problems alternate: one guided step by step, the next on your own (type the answer) */
+function next(){toWrap({type:'next'})}   /* the wrapper picks the next question */
+function loadSlot(i){
+  st.slot=i;
+  st.guided=i<5||!!HELP[i];   /* 21-25: step by step. 26-30: on your own, with steps only while Help is on */
+  st.p=SLOTS[i]; st.tap=0; st.miss=null; st.dir=0; st.wrong=false; st.done=false;
+  $('q').innerHTML=st.p.q;
+  $('area').innerHTML='';
+  say('','');
+  clearTimeout(st.nextT); clearTimeout(st.idleT);
+  /* make it obvious which kind of problem this is */
+  const md=$('mode');
+  md.className='mode'+(st.guided?'':' own');
+  md.innerHTML=st.guided
+    ?'<span class="ic" aria-hidden="true">We</span><div><h2>Let’s do this one together</h2><p>Follow the steps one at a time.</p></div>'
+    :'<span class="ic" aria-hidden="true">You</span><div><h2>Your turn: on your own</h2><p>Use the stairs. Stuck? Press Help to do it step by step.</p></div>';
+  void md.offsetWidth; md.classList.add('pop');
+  document.querySelector('.stage').classList.toggle('together',st.guided);
+  document.querySelector('.stage').classList.toggle('own',!st.guided);
+  if(st.guided){
+    st.step=1;
+    setPrompt(`Find <b>${ab(st.p.t,st.p.a)}</b> on the stairs. Tap it.`);
+  }else{
+    st.step=4;
+    setPrompt('Find the answer and type it in.');
+    buildAnswer();
+  }
+  drawStairs(); updateCount();
+  if(document.activeElement&&document.activeElement!==document.body) document.activeElement.blur();   /* no stair looks picked before the student taps */
+  if(DONE[i]) showSolved();
+  syncHelp();
+}
+document.addEventListener('keydown',e=>{
+  if(TI.open){if(e.key==='Escape')closeTurnIn();return}
+  if(st.step===2&&!st.done&&/^[lr]$/i.test(e.key)&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();pickDir(e.key.toLowerCase()==='l'?-1:1);return}
+  if(st.step===3&&!st.done&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){e.preventDefault();moveDot(e.key==='ArrowLeft'?-1:1);return}
+  if(e.key!=='Enter') return;
+  const t=e.target;
+  if(t.tagName==='BUTTON'&&!t.classList.contains('arrow')) return;
+  e.preventDefault();
+  if(st.done){next();return}
+  check();
+});
+
+/* ---------- turning it in (Google Form) ----------
+   The same Google Form as the other drills: student code, number solved, drill name.
+   Students can turn in early, any time, as many times as they want; each time sends what's solved so far. */
+const GOAL=20;
+const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLScLjdoG75r1XORoNx4v6u-1TEzXcuQoJqQIvbbEmD_QlFFzmA/formResponse';
+const DRILL_NAME='Metric Conversions';
+const CODE_KEY='metric-student-code';
+const TI={code:'',sent:null,pending:null,sending:false,note:'',open:false,auto:false};
+try{TI.code=localStorage.getItem(CODE_KEY)||''}catch(e){}
+function saveCode(){try{localStorage.setItem(CODE_KEY,TI.code)}catch(e){}}
+const escH=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function updateCount(){
+  $('count').innerHTML=`Solved<b>${st.solved}</b> / ${GOAL}`;
+  if(st.solved>=GOAL&&!TI.auto){TI.auto=true;setTimeout(openTurnIn,1200)}   /* 30 solved: turn in shows up */
+}
+function openTurnIn(){if(TI.open)return;TI.open=true;TI.note='';$('turnBtn').textContent='Back to the problems';renderTurnIn()}
+function closeTurnIn(){TI.open=false;const m=$('tiModal');if(m)m.remove();$('turnBtn').textContent='Turn in';if(st.done){clearTimeout(st.nextT);st.nextT=setTimeout(next,800)}}
+function renderTurnIn(){
+  let m=$('tiModal');
+  if(!m){m=document.createElement('div');m.id='tiModal';m.className='ti-modal';document.body.appendChild(m)}
+  const n=st.solved, text=DRILL_NAME+': '+n, more=TI.sent!==null&&TI.sent!==text, showForm=TI.sent===null||more;
+  const chips=Array.from({length:GOAL},(_,i)=>`<span class="ti-q${i<n?' done':''}">${i+1}</span>`).join('');
+  m.innerHTML=`<section class="ti-card" role="dialog" aria-modal="true" aria-labelledby="ti-title">
+    <h2 id="ti-title">Turn in</h2>
+    <p class="ti-sub">You’ve solved <b>${n}</b> of ${GOAL} problems.${n>GOAL?' Nice work going past '+GOAL+'!':''}</p>
+    <div class="ti-grid">${chips}</div>
+    <div class="ti-legend"><span><span class="ti-q done">&#10003;</span>solved</span><span><span class="ti-q"></span>not yet</span></div>
+    <iframe name="ti_frame" id="ti_frame" title="Sending" style="display:none"></iframe>
+    <form id="tiForm" action="${FORM_URL}" method="POST" target="ti_frame"${showForm?'':' hidden'}>
+      <div class="ti-warn">Type your <b>student code</b> carefully. Double-check it before you submit.</div>
+      <label for="tiCode">Student code</label>
+      <input type="text" id="tiCode" placeholder="Your code" autocomplete="off" autocapitalize="characters" spellcheck="false" required value="${escH(TI.code)}">
+      <input type="hidden" id="tiFCode" name="entry.1999309314" value="">
+      <input type="hidden" id="tiFScore" name="entry.1276394101" value="">
+      <input type="hidden" id="tiFDrill" name="entry.582215829" value="">
+      <button type="submit" class="btn primary" id="tiSubmit">${more?'Send updated results':'Submit results'}</button>
+    </form>
+    <p class="ti-feedback" id="tiFeedback">${TI.note||(more?'You turned in before. Send again to update your results.':'')}</p>
+    <div><button type="button" class="btn" id="tiBack">Back to the problems</button></div>
+  </section>`;
+  $('tiCode').addEventListener('input',e=>{const el=e.target,v=el.value.replace(/\s+/g,'');if(v!==el.value)el.value=v;TI.code=v;saveCode()});
+  $('ti_frame').addEventListener('load',()=>{
+    if(!TI.sending)return;
+    TI.sending=false;TI.sent=TI.pending;
+    TI.note='<span class="ok">Submitted. Your teacher has your results.</span>';
+    renderTurnIn();
+  });
+  $('tiForm').addEventListener('submit',()=>{
+    const code=$('tiCode').value.trim().toUpperCase();
+    $('tiFCode').value=code;$('tiFScore').value=String(st.solved);$('tiFDrill').value=DRILL_NAME;
+    TI.code=code;saveCode();TI.pending=DRILL_NAME+': '+st.solved;TI.sending=true;
+    $('tiFeedback').textContent='Sending…';
+  });
+  $('tiBack').onclick=closeTurnIn;
+  m.onclick=e=>{if(e.target===m)closeTurnIn()};
+  if(showForm)setTimeout(()=>{const el=TI.code?$('tiSubmit'):$('tiCode');if(el)el.focus()},50);
+}
+$('turnBtn').addEventListener('click',()=>{if(TI.open)closeTurnIn();else openTurnIn()});
+var PART_NAME='kh';
+/* ---------- combined set: this page runs inside the wrapper ---------- */
+function toWrap(m){try{parent.postMessage(Object.assign({combo:PART_NAME},m),'*')}catch(e){}}
+function openTurnIn(){if(TI.open)return;TI.open=true;toWrap({type:'turnin'})}
+function markSolved(){if(!DONE[st.slot])DONE[st.slot]=true;st.solved=DONE.filter(Boolean).length}
+function updateCount(){toWrap({type:'state',done:DONE.slice(),cur:st.slot})}
+addEventListener('message',e=>{const d=e.data||{};if(d.combo!=='wrap')return;
+  if(d.type==='go'){if(d.i!==st.slot)loadSlot(d.i);else updateCount()}
+  if(d.type==='opened'){TI.open=true}
+  if(d.type==='closed'&&TI.open){closeTurnIn()}});
+/* Help on the on-your-own questions (26-30): turns the steps on, and the same button turns them back off */
+const HELP=[];
+function syncHelp(){const b=$('helpBtn');b.hidden=st.slot<5||st.done;b.textContent=HELP[st.slot]?'Turn off help':'Help'}
+$('helpBtn').addEventListener('click',()=>{if(st.done)return;const i=st.slot;HELP[i]=!HELP[i];st.slot=-1;loadSlot(i);updateCount();$('helpBtn').focus()});
+/* 10 fixed questions, so students can go back to any of them */
+/* Directions are mixed on purpose: in 21-25 and again in 26-30, some go right (down the stairs) and some go left (up),
+   never more than 2 in a row the same way. */
+function dirPattern(){
+  for(;;){const d=shuffle(Math.random()<.5?[1,1,1,-1,-1]:[1,1,-1,-1,-1]);
+    if(!d.some((x,i)=>i>1&&x===d[i-1]&&x===d[i-2])) return d}
+}
+function genDir(dir){
+  for(;;){const keep=dekaUsed, p=gen(); if(Math.sign(p.b-p.a)===dir) return p; dekaUsed=keep}
+}
+const DIRS=(()=>{for(;;){const d=[...dirPattern(),...dirPattern()];if(!d.some((x,i)=>i>1&&x===d[i-1]&&x===d[i-2]))return d}})();
+const SLOTS=DIRS.map(genDir), DONE=SLOTS.map(()=>false);
+/* a question solved earlier opens finished: stairs, jumps, decimal point and answer */
+function showSolved(){
+  const p=st.p;
+  st.guided=true; st.tap=1; st.step=3; buildMover();
+  st.dp=st.p0+(p.b-p.a); st.step=4; buildAnswer();
+  const el=$('ans'); el.value=p.ans; el.classList.add('ok'); el.disabled=true;
+  drawMover(true); st.done=true; drawStairs();
+  setPrompt('You already solved this one.');
+  say('good',`✓ ${show(p.v)} ${ab(p.t,p.a)} = ${show(p.ans)} ${ab(p.t,p.b)}`);
+}
+
+loadSlot(0);
+<\/script>
+</body>
+</html>
+</script>
+
+<script>
+/* ---------- the set, in order: writing ratios, finding equivalent ratios, metric conversions; all step by step ----------
+   The two ratio groups run in the ratios frame (its questions 0-9 and 10-19); metric conversions run in the King Henry frame. */
+const GROUPS=[
+  {name:'Writing ratios',     frame:'ratio',n:10,at:0},
+  {name:'Finding equivalent ratios',frame:'ratio',n:10,at:10},
+  {name:'Metric conversions', frame:'kh',   n:10,at:0}];
+let start=0; GROUPS.forEach(G=>{G.first=start;start+=G.n});
+const GOAL=start;
+const $=id=>document.getElementById(id);
+const src=id=>$(id).textContent.replace(/<\\\/script/gi,'</script');
+const S={done:Array(GOAL).fill(false),cur:0};
+const groupOf=g=>GROUPS.find(G=>g>=G.first&&g<G.first+G.n);
+const local=g=>{const G=groupOf(g);return G.at+g-G.first};                 /* question number inside its frame */
+const globalOf=(frame,i)=>{const G=GROUPS.find(G=>G.frame===frame&&i>=G.at&&i<G.at+G.n);return G?G.first+i-G.at:-1};
+const frameFor=f=>f==='ratio'?$('f1'):$('f2');
+const send=(f,m)=>{try{f.contentWindow.postMessage(Object.assign({combo:'wrap'},m),'*')}catch(e){}};
+const total=()=>S.done.filter(Boolean).length;
+const cnt=G=>S.done.slice(G.first,G.first+G.n).filter(Boolean).length;
+
+/* question buttons, one labeled group per skill */
+$('qnav').innerHTML=GROUPS.map((G,gi)=>`<div class="grp" data-gi="${gi}"><h2>${G.name} <span id="gc${gi}"></span></h2><div class="chips">`
+  +Array.from({length:G.n},(_,i)=>`<button type="button" class="qb" data-g="${G.first+i}">${G.first+i+1}</button>`).join('')+'</div></div>').join('');
+document.querySelectorAll('.qb').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.g)));
+function paint(){
+  document.querySelectorAll('.qb').forEach(b=>{
+    const g=+b.dataset.g, d=S.done[g], c=g===S.cur;
+    b.classList.toggle('done',d);
+    b.setAttribute('aria-current',c?'true':'false');
+    b.setAttribute('aria-label',`Question ${g+1}${d?', solved':''}${c?', open now':''}`);
+  });
+  GROUPS.forEach((G,gi)=>{$('gc'+gi).textContent=`(${cnt(G)} of ${G.n})`;document.querySelector(`.grp[data-gi="${gi}"]`).classList.toggle('on',G===groupOf(S.cur))});
+  $('count').innerHTML=`Solved<b>${total()}</b> / ${GOAL}`;
+}
+
+/* open any question: switch frames if needed; a frame keeps a half-done question if you come straight back to it */
+function go(g){
+  if(g<0||g>=GOAL) return;
+  S.cur=g;
+  const fn=groupOf(g).frame, f=frameFor(fn), other=frameFor(fn==='ratio'?'kh':'ratio');
+  other.classList.add('off'); other.tabIndex=-1;
+  f.classList.remove('off'); f.removeAttribute('tabindex');
+  send(f,{type:'go',i:local(g)});
+  paint();
+  try{f.contentWindow.focus()}catch(e){}
+}
+/* Next (or the auto-advance after a right answer): the next unsolved question after this one */
+function goNext(){
+  for(let s=1;s<GOAL;s++){const g=(S.cur+s)%GOAL;if(!S.done[g]){go(g);return}}
+}
+
+$('f1').addEventListener('load',()=>{if(groupOf(S.cur).frame==='ratio')$('f1').contentWindow.focus()});
+$('f1').srcdoc=src('src-ratio');
+$('f2').srcdoc=src('src-kh');
+
+addEventListener('message',e=>{
+  const d=e.data||{}, from=e.source===$('f1').contentWindow?'ratio':e.source===$('f2').contentWindow?'kh':null;
+  if(!from||d.combo!==from) return;
+  const active=groupOf(S.cur).frame===from;
+  if(d.type==='state'){
+    d.done.forEach((v,i)=>{const g=globalOf(from,i);if(g>-1)S.done[g]=!!v});
+    paint();
+    if(total()>=GOAL&&!TI.auto){TI.auto=true;setTimeout(()=>{if(!TI.open){send(frameFor(groupOf(S.cur).frame),{type:'opened'});openTurnIn()}},1200)}   /* all done: turn in shows up */
+  }
+  if(d.type==='next'&&active&&!TI.open) goNext();
+  if(d.type==='turnin') openTurnIn();
+});
+paint();
+
+/* ---------- turning it in (Google Form) ----------
+   Same Google Form as the separate drills: student code, number solved, drill name.
+   Students can turn in any time, as many times as they want; each time sends what's solved so far. */
+const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLScLjdoG75r1XORoNx4v6u-1TEzXcuQoJqQIvbbEmD_QlFFzmA/formResponse';
+const DRILL_NAME='Ratios + Metric Conversions';
+const CODE_KEY='combo-student-code';
+const TI={code:'',sent:null,pending:null,sending:false,note:'',open:false,auto:false};
+try{TI.code=localStorage.getItem(CODE_KEY)||localStorage.getItem('ratios-student-code')||localStorage.getItem('metric-student-code')||''}catch(e){}
+function saveCode(){try{localStorage.setItem(CODE_KEY,TI.code)}catch(e){}}
+const escH=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function openTurnIn(){if(TI.open)return;TI.open=true;TI.note='';$('turnBtn').textContent='Back to the problems';renderTurnIn()}
+function closeTurnIn(){
+  TI.open=false; const m=$('tiModal'); if(m) m.remove(); $('turnBtn').textContent='Turn in';
+  const f=frameFor(groupOf(S.cur).frame); try{f.contentWindow.focus()}catch(e){} send(f,{type:'closed'});
+}
+function chips(G){return Array.from({length:G.n},(_,i)=>`<span class="ti-q${S.done[G.first+i]?' done':''}">${G.first+i+1}</span>`).join('')}
+function renderTurnIn(){
+  let m=$('tiModal');
+  if(!m){m=document.createElement('div');m.id='tiModal';m.className='ti-modal';document.body.appendChild(m)}
+  const n=total(), text=DRILL_NAME+': '+n, more=TI.sent!==null&&TI.sent!==text, showForm=TI.sent===null||more;
+  m.innerHTML=`<section class="ti-card" role="dialog" aria-modal="true" aria-labelledby="ti-title">
+    <h2 id="ti-title">Turn in</h2>
+    <p class="ti-sub">You’ve solved <b>${n}</b> of ${GOAL} problems.</p>
+    ${GROUPS.map(G=>`<div class="ti-part"><h3>${G.name} (${cnt(G)} of ${G.n})</h3><div class="ti-grid">${chips(G)}</div></div>`).join('')}
+    <div class="ti-legend"><span><span class="ti-q done">&#10003;</span>solved</span><span><span class="ti-q"></span>not yet</span></div>
+    <iframe name="ti_frame" id="ti_frame" title="Sending" style="display:none"></iframe>
+    <form id="tiForm" action="${FORM_URL}" method="POST" target="ti_frame"${showForm?'':' hidden'}>
+      <div class="ti-warn">Type your <b>student code</b> carefully. Double-check it before you submit.</div>
+      <label for="tiCode">Student code</label>
+      <input type="text" id="tiCode" placeholder="Your code" autocomplete="off" autocapitalize="characters" spellcheck="false" required value="${escH(TI.code)}">
+      <input type="hidden" id="tiFCode" name="entry.1999309314" value="">
+      <input type="hidden" id="tiFScore" name="entry.1276394101" value="">
+      <input type="hidden" id="tiFDrill" name="entry.582215829" value="">
+      <button type="submit" class="btn primary" id="tiSubmit">${more?'Send updated results':'Submit results'}</button>
+    </form>
+    <p class="ti-feedback" id="tiFeedback">${TI.note||(more?'You turned in before. Send again to update your results.':'')}</p>
+    <div><button type="button" class="btn" id="tiBack">Back to the problems</button></div>
+  </section>`;
+  $('tiCode').addEventListener('input',e=>{const el=e.target,v=el.value.replace(/\s+/g,'');if(v!==el.value)el.value=v;TI.code=v;saveCode()});
+  $('ti_frame').addEventListener('load',()=>{
+    if(!TI.sending)return;
+    TI.sending=false;TI.sent=TI.pending;
+    TI.note='<span class="ok">Submitted. Your teacher has your results.</span>';
+    renderTurnIn();
+  });
+  $('tiForm').addEventListener('submit',()=>{
+    const code=$('tiCode').value.trim().toUpperCase(), n=total();
+    $('tiFCode').value=code;$('tiFScore').value=String(n);$('tiFDrill').value=DRILL_NAME;
+    TI.code=code;saveCode();TI.pending=DRILL_NAME+': '+n;TI.sending=true;
+    $('tiFeedback').textContent='Sending…';
+  });
+  $('tiBack').onclick=closeTurnIn;
+  m.onclick=e=>{if(e.target===m)closeTurnIn()};
+  if(showForm)setTimeout(()=>{const el=TI.code?$('tiSubmit'):$('tiCode');if(el)el.focus()},50);
+}
+$('turnBtn').addEventListener('click',()=>{if(TI.open)closeTurnIn();else{send(frameFor(groupOf(S.cur).frame),{type:'opened'});openTurnIn()}});
+document.addEventListener('keydown',e=>{if(TI.open&&e.key==='Escape')closeTurnIn()});
 </script>
 </body>
 </html>
