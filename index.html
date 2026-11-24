@@ -2015,6 +2015,16 @@ body{font-family:var(--sans);color:var(--ink);background:#fff;font-variant-numer
 .stair .w{font:700 19px var(--sans);fill:var(--ink)}
 .stair .p{font:15px var(--sans);fill:var(--muted)}
 .stair .u{font:bold 30px var(--sans);fill:var(--ink)}
+.stair .pic{font:32px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+
+/* size check: what 1 of each unit in this problem is about the size of */
+.emo{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.sizes{display:flex;gap:14px;flex-wrap:wrap}
+.size{display:flex;align-items:center;gap:12px;flex:1 1 240px;padding:8px 16px 8px 10px;border-radius:14px;border:2px solid var(--blue);background:#F5F8FE}
+.size.to{border-color:var(--good);background:#F3FBF7}
+.size .emo{flex:none;font-size:44px;line-height:1}
+.size span{font-size:18px;line-height:1.3}
+.size b{font-size:20px}
 .hop{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round}
 .hopn{font:bold 18px var(--sans);fill:var(--blue)}
 .hopcap{font:bold 22px var(--sans);fill:var(--blue)}
@@ -2094,7 +2104,10 @@ input.num:disabled{opacity:1;color:var(--ink)}
 .ti-feedback .ok{color:var(--good);font-size:22px;font-weight:800}
 
 .bar{display:none!important}
-.app{grid-template-rows:1fr!important;min-height:0!important;height:100vh;height:100dvh}
+.app{grid-template-rows:minmax(0,1fr)!important;min-height:0!important;height:100vh;height:100dvh}
+/* the stairs shrink to fit the space left under the question and size cards, so nothing is cut off */
+@media (min-width:1051px){.stage{grid-template-rows:minmax(0,1fr)}.visual{min-height:0}.stairs{flex:1 1 0;min-height:180px}}
+@media (max-height:700px){.visual{padding:16px 20px;gap:12px}.qcard{font-size:22px}.size{padding:4px 12px 4px 8px}.size .emo{font-size:32px}.size span{font-size:15px;line-height:1.25}.size b{font-size:17px}.rule{font-size:15px}}
 @media (max-width:1050px){
   .stage{grid-template-columns:minmax(0,1fr)}
   .app{padding:12px 14px 20px}
@@ -2122,6 +2135,7 @@ input.num:disabled{opacity:1;color:var(--ink)}
   <div class="stage">
     <section class="visual" aria-label="Problem">
       <p class="qcard" id="q"></p>
+      <div class="sizes" id="sizes" aria-label="How big each unit is"></div>
       <svg class="stairs" id="stairs" viewBox="0 0 760 530" role="group" aria-label="King Henry Died By Drinking Chocolate Milk staircase"></svg>
       <p class="rule">Down the stairs (to the right): move the decimal point right.<br>Up the stairs (to the left): move it left.</p>
     </section>
@@ -2152,6 +2166,21 @@ const name=(t,i,pl=true)=>PRE[i].p+BASE[t]+(pl?'s':'');       /* kilometers */
 const K=0,H=1,DA=2,B=3,D=4,C=5,M=6;
 const full=(t,i,pl=true)=>`${name(t,i,pl)} (${ab(t,i)})`;                 /* kilometers (km) */
 const amt=(v,t,i)=>`<b>${v} ${full(t,i,v!=='1')}</b>`;                     /* 3.5 kilometers (km) */
+
+/* ---------- what 1 of each unit is about the size of (King, Henry, Died, By, Drinking, Chocolate, Milk) ---------- */
+const SIZE={
+  m:[['🚶','a 12-minute walk'],['⚽','the length of a soccer field'],['🚌','the length of a school bus'],['🎸','the length of a guitar'],
+     ['🖍️','the length of a crayon'],['📌','the width of a pushpin head'],['💳','the thickness of a credit card']],
+  g:[['🍍','the mass of a pineapple'],['🧈','the mass of a stick of butter'],['🪙','the mass of 2 nickels'],['📎','the mass of a paper clip'],
+     ['🍚','the mass of 4 grains of rice'],['🪰','the mass of a housefly'],['🐜','the mass of a tiny ant']],
+  L:[['📦','a 1-meter cube of water'],['🛁','a bathtub about half full'],['🪣','a bucket of water'],['🥛','a carton of milk'],
+     ['🧃','half a juice box'],['🥄','2 teaspoons'],['💧','a full medicine dropper']]
+};
+const sizeOf=(t,i)=>`1 ${ab(t,i)} is about ${SIZE[t][i][1]}`;
+function drawSizes(){
+  const p=st.p, card=(i,cls)=>`<div class="size${cls}"><span class="emo" aria-hidden="true">${SIZE[p.t][i][0]}</span><span><b>1 ${ab(p.t,i)}</b> is about<br>${SIZE[p.t][i][1]}</span></div>`;
+  $('sizes').innerHTML=card(p.a,'')+card(p.b,' to');
+}
 
 /* ---------- moving the decimal point, done with digit strings (no rounding errors) ---------- */
 function parts(v){const [i,f='']=v.split('.');return {dg:i+f,p:i.length}}
@@ -2184,13 +2213,13 @@ const STORIES=[
   ['m',B,K,()=>n(350,4800),v=>`The walk from school to the park is ${amt(v,'m',3)}. How many kilometers (${ab('m',0)}) is that?`],
   ['m',C,B,()=>n(45,250),v=>`A desk is ${amt(v,'m',5)} wide. How many meters (${ab('m',3)}) wide is it?`],
   ['m',DA,B,()=>d1(1,1),v=>`A school bus is about ${amt(v,'m',2)} long. How many meters (${ab('m',3)}) long is it?`],
-  ['m',H,B,()=>one([n(2,9),d1(1,4)]),v=>`A soccer field is about ${amt(v,'m',1)} long. How many meters (${ab('m',3)}) is that?`],
-  ['m',D,C,()=>one([n(2,9),d1(1,3)]),v=>`A shoe box is ${amt(v,'m',4)} long. How long is it in centimeters (${ab('m',5)})?`],
+  ['m',H,B,()=>one(['1','1.1','1.2']),v=>`A soccer field is about ${amt(v,'m',1)} long. How many meters (${ab('m',3)}) is that?`],
+  ['m',D,C,()=>one([n(2,4),d1(2,3)]),v=>`A shoe box is ${amt(v,'m',4)} long. How long is it in centimeters (${ab('m',5)})?`],
   ['g',K,B,()=>one([n(2,9),d1(1,9)]),v=>`A bag of apples has a mass of ${amt(v,'g',0)}. What is its mass in grams (${ab('g',3)})?`],
   ['g',B,K,()=>n(250,3500),v=>`A bag of dog food has a mass of ${amt(v,'g',3)}. What is its mass in kilograms (${ab('g',0)})?`],
   ['g',B,M,()=>one(['1','2','1.5','0.5','3']),v=>`A paper clip has a mass of ${amt(v,'g',3)}. What is its mass in milligrams (${ab('g',6)})?`],
   ['g',M,B,()=>n(200,900),v=>`A vitamin has ${amt(v,'g',6)} of vitamin C. How many grams (${ab('g',3)}) is that?`],
-  ['g',C,B,()=>n(40,95),v=>`A grape has a mass of ${amt(v,'g',5)}. How many grams (${ab('g',3)}) is that?`],
+  ['g',C,B,()=>n(40,95),v=>`A raisin has a mass of ${amt(v,'g',5)}. How many grams (${ab('g',3)}) is that?`],
   ['L',M,B,()=>n(250,1500),v=>`A water bottle holds ${amt(v,'L',6)}. How many liters (${ab('L',3)}) is that?`],
   ['L',B,M,()=>one([n(2,4),d1(1,4)]),v=>`A jug of juice holds ${amt(v,'L',3)}. How many milliliters (${ab('L',6)}) is that?`],
   ['L',K,B,()=>d1(1,9),v=>`A small pool holds ${amt(v,'L',0)} of water. How many liters (${ab('L',3)}) is that?`],
@@ -2249,11 +2278,12 @@ function drawStairs(){
     if(reveal&&st.step>1&&i===p.b) cls+=' end';
     if(st.miss===i) cls+=' miss';
     const y=sy(i);
-    h+=`<g class="${cls}" data-i="${i}" ${st.step===1&&!st.done?'tabindex="0" role="button"':''} aria-label="${PRE[i].w}: ${PRE[i].base?BASE[p.t]+'s, the base unit':name(p.t,i)} (${ab(p.t,i)})">
+    h+=`<g class="${cls}" data-i="${i}" ${st.step===1&&!st.done?'tabindex="0" role="button"':''} aria-label="${PRE[i].w}: ${PRE[i].base?BASE[p.t]+'s, the base unit':name(p.t,i)} (${ab(p.t,i)}). ${sizeOf(p.t,i)}.">
       <rect class="step" x="${sx(i)}" y="${y}" width="${SW}" height="${BOT-y}" rx="6"/>
       <text class="w" x="${cx(i)}" y="${y+30}" text-anchor="middle">${PRE[i].w}</text>
       <text class="p" x="${cx(i)}" y="${y+52}" text-anchor="middle">${PRE[i].base?'base':PRE[i].p}</text>
-      <text class="u" x="${cx(i)}" y="${y+92}" text-anchor="middle">${ab(p.t,i)}</text></g>`;
+      <text class="u" x="${cx(i)}" y="${y+92}" text-anchor="middle">${ab(p.t,i)}</text>
+      <text class="pic" x="${cx(i)}" y="${y+130}" text-anchor="middle" aria-hidden="true">${SIZE[p.t][i][0]}<title>${sizeOf(p.t,i)}</title></text></g>`;
   }
   /* jumps from the start stair to the end stair, drawn once the count is right */
   if(st.step>2&&(st.guided||st.done)){
@@ -2460,6 +2490,7 @@ function loadSlot(i){
   st.guided=i<5||!!HELP[i];   /* 21-25: step by step. 26-30: on your own, with steps only while Help is on */
   st.p=SLOTS[i]; st.tap=0; st.miss=null; st.dir=0; st.wrong=false; st.done=false;
   $('q').innerHTML=st.p.q;
+  drawSizes();
   $('area').innerHTML='';
   say('','');
   clearTimeout(st.nextT); clearTimeout(st.idleT);
